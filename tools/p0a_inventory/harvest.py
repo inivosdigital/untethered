@@ -27,17 +27,19 @@ Run it daily (cron) to measure flow; it dedups by posting id across runs.
 
 import argparse
 import csv
+import html
 import json
 import os
 import re
 import sys
+import urllib.parse
 import urllib.request
-import urllib.error
-from datetime import date, datetime, timezone
+from datetime import date
 from html.parser import HTMLParser
 
 UA = "untethered-p0a-inventory/0.1 (research spike; contact: admin@inivosdigital.com)"
 HOURS_PER_YEAR = 2080
+HOURS_PER_DAY = 8
 FLOOR_HOURLY = 30.0
 
 # ----------------------------------------------------------------------------
@@ -51,9 +53,9 @@ DEFAULT_TITLE_KEYWORDS = [
 ]
 # Onshore = offshore-RESISTANT signals (complex, judgment, US-context, patient-facing)
 ONSHORE_SIGNALS = [
-    "denial", "denials", "appeal", "appeals", "underpayment", "complex",
+    "denial", "denials", "appeal", "appeals", "underpayment",
     "payer policy", "payer-policy", "dispute", "negotiat", "escalat",
-    "patient financial", "financial counsel", "patient-facing", "audit",
+    "patient financial", "financial counsel", "patient-facing",
     "clinical documentation", "cdi", "variance", "root cause", "grievance",
 ]
 # Offshore-prone = commodity / transactional signals (racing offshore)
@@ -73,6 +75,16 @@ HYBRID_FLAGS = re.compile(
     r"\b(hybrid|on-?site|in-?office|in person|days?\s+(?:per week\s+)?in (?:the )?office|"
     r"must reside in|must live in|located in|relocat|commut)\b", re.I)
 REMOTE_FLAGS = re.compile(r"\b(fully remote|100% remote|remote|work from home|telework|wfh)\b", re.I)
+# Clear NON-remote phrasing: 'remote not available', 'non-remote', 'no/not remote'.
+NEG_REMOTE_FLAGS = re.compile(
+    r"\b(no|not) remote\b"
+    r"|\bnon-?remote\b"
+    r"|\bremote\b[^.]{0,25}\b(not (?:available|offered|eligible|permitted|an option)|unavailable)\b"
+    r"|\bnot eligible for remote\b", re.I)
+# Remote-AFFIRMING geo phrasing that should NOT trip the hybrid/geo flags.
+REMOTE_ANYWHERE_FLAGS = re.compile(
+    r"\b(fully remote|100% remote|work from anywhere|remote from anywhere|"
+    r"located in any|any (?:us )?state|anywhere in the (?:us|united states))\b", re.I)
 
 
 # ----------------------------------------------------------------------------
@@ -93,34 +105,71 @@ class _Stripper(HTMLParser):
         self.parts.append(data)
 
 
-def strip_html(html):
-    if not html:
+def strip_html(raw):
+    if not raw:
         return ""
+    # Greenhouse returns ENTITY-ENCODED html (&lt;p&gt;...); decode entities first
+    # so the tags become real tags the parser can strip. For already-plain html
+    # this only unescapes text entities (e.g. &amp;) and leaves tags intact.
+    text = html.unescape(raw)
     p = _Stripper()
     try:
-        p.feed(html)
+        p.feed(text)
     except Exception:
-        return re.sub(r"<[^>]+>", " ", html)
+        return re.sub(r"<[^>]+>", " ", text)
     return re.sub(r"\s+", " ", " ".join(p.parts)).strip()
 
 
 # ----------------------------------------------------------------------------
 # Pay parsing -> hourly
 # ----------------------------------------------------------------------------
+# Bare interval CODES that carry no English word (USAJOBS RateIntervalCode,
+# etc.) mapped to a word the substring logic below understands.
+_INTERVAL_CODES = {
+    "ph": "hour", "pa": "year", "py": "year", "pm": "month",
+    "pw": "week", "pd": "day", "bw": "biweek",
+}
+
+
 def to_hourly(amount, interval_hint=""):
-    """Normalize a numeric amount to an hourly figure using an interval hint or magnitude."""
+    """Normalize a numeric amount to an hourly figure using an interval hint or magnitude.
+
+    Recognizes hourly/annual/monthly/weekly/biweekly/daily intervals, expressed
+    either as English words (Lever 'per-month-salary') or as bare codes
+    (USAJOBS 'PM'/'PW'/'PD'/'BW'). Falls back to a magnitude guess only for
+    genuinely unknown hints.
+    """
     if amount is None:
         return None
-    hint = (interval_hint or "").lower()
+    hint = (interval_hint or "").lower().strip()
+    hint = _INTERVAL_CODES.get(hint, hint)
     if any(k in hint for k in ("hour", "hr", "/h")):
         return amount
-    if any(k in hint for k in ("year", "annual", "yr", "/y")):
+    if any(k in hint for k in ("year", "annual", "annum", "yr", "/y")):
         return amount / HOURS_PER_YEAR
-    # fall back to magnitude
+    if "biweek" in hint or "bi-week" in hint or "bi week" in hint:
+        return amount * 26 / HOURS_PER_YEAR
+    if "month" in hint or "/mo" in hint or "mth" in hint:
+        return amount * 12 / HOURS_PER_YEAR
+    if "week" in hint or "wk" in hint:
+        return amount * 52 / HOURS_PER_YEAR
+    if "day" in hint or "daily" in hint or "diem" in hint:
+        return amount / HOURS_PER_DAY
+    # genuinely unknown interval: fall back to magnitude
     return amount if amount < 1000 else amount / HOURS_PER_YEAR
 
 
 _MONEY = re.compile(r"\$\s*([0-9]{2,3}(?:,[0-9]{3})*(?:\.[0-9]+)?)")
+# Context words that mark a nearby $ figure as NOT salary. A bonus, tuition
+# benefit, or "we saved clients $X" claim is not pay — counting it as such
+# inflates the funnel (a $500k savings figure would clear the $30/hr floor).
+_PAY_DISQUALIFIERS = (
+    "bonus", "sign-on", "sign on", "signing", "reimburs", "tuition",
+    "relocat", "saved", "saving", "revenue", "portfolio", "aum",
+    "401", "stipend", "budget", "raised", "funding", "valuation",
+    "valued", "scholarship", "award", "prize", "grant", "equity",
+    "stock", "discount", "deductible", "premium", "penalty",
+)
 
 
 def parse_pay_from_text(text):
@@ -134,8 +183,17 @@ def parse_pay_from_text(text):
         lo = float(m.group(1))
         hi = float(m.group(2)) if m.group(2) else lo
         return max(lo, hi), m.group(0)
-    nums = [float(n.replace(",", "")) for n in _MONEY.findall(window)]
-    nums = [n for n in nums if n >= 10]  # drop noise
+    # fall back to the largest plausible salary figure, skipping any $ amount
+    # whose nearby context marks it as non-salary (bonus/savings/tuition/...).
+    low = window.lower()
+    nums = []
+    for mm in _MONEY.finditer(window):
+        ctx = low[max(0, mm.start() - 28): mm.end() + 28]
+        if any(bad in ctx for bad in _PAY_DISQUALIFIERS):
+            continue
+        val = float(mm.group(1).replace(",", ""))
+        if val >= 10:  # drop noise
+            nums.append(val)
     if not nums:
         return None, None
     top = max(nums)
@@ -151,9 +209,10 @@ def posting(source, source_id, employer, title, location, workplace, description
     desc = strip_html(description)
     pay_hourly, pay_src = None, ""
     if pay_max is not None or pay_min is not None:
-        amt = pay_max if pay_max is not None else pay_min
-        pay_hourly = to_hourly(float(amt), pay_interval)
-        pay_src = "structured"
+        amt = _to_float(pay_max if pay_max is not None else pay_min)
+        if amt is not None:
+            pay_hourly = to_hourly(amt, pay_interval)
+            pay_src = "structured"
     if pay_hourly is None:
         pay_hourly, raw = parse_pay_from_text(f"{title} {desc}")
         if pay_hourly is not None:
@@ -177,20 +236,27 @@ def fetch_greenhouse(token):
     except Exception as e:
         print(f"  [greenhouse:{token}] skip ({e})", file=sys.stderr)
         return out
-    for j in data.get("jobs", []):
-        meta = {m.get("name", "").lower(): m.get("value") for m in (j.get("metadata") or [])}
-        pmin = pmax = None
-        for k in ("salary", "pay range", "compensation"):
-            if k in meta and meta[k]:
-                hourly, _ = parse_pay_from_text(str(meta[k]))
-                if hourly:
-                    pmax = hourly
-                    break
-        out.append(posting(
-            "greenhouse", j.get("id"), token, j.get("title"),
-            (j.get("location") or {}).get("name"), "", j.get("content", ""),
-            pay_max=pmax, pay_interval="hour" if pmax else "",
-            url=j.get("absolute_url", ""), posted_at=j.get("updated_at", "")))
+    jobs = data.get("jobs") if isinstance(data, dict) else None
+    if not isinstance(jobs, list):
+        print(f"  [greenhouse:{token}] skip (unexpected payload)", file=sys.stderr)
+        return out
+    for j in jobs:
+        try:
+            meta = {m.get("name", "").lower(): m.get("value") for m in (j.get("metadata") or [])}
+            pmin = pmax = None
+            for k in ("salary", "pay range", "compensation"):
+                if k in meta and meta[k]:
+                    hourly, _ = parse_pay_from_text(str(meta[k]))
+                    if hourly:
+                        pmax = hourly
+                        break
+            out.append(posting(
+                "greenhouse", j.get("id"), token, j.get("title"),
+                (j.get("location") or {}).get("name"), "", j.get("content", ""),
+                pay_max=pmax, pay_interval="hour" if pmax else "",
+                url=j.get("absolute_url", ""), posted_at=j.get("updated_at", "")))
+        except Exception as e:
+            print(f"  [greenhouse:{token}] bad record skipped ({e})", file=sys.stderr)
     return out
 
 
@@ -201,16 +267,27 @@ def fetch_lever(company):
     except Exception as e:
         print(f"  [lever:{company}] skip ({e})", file=sys.stderr)
         return out
+    if not isinstance(data, list):
+        print(f"  [lever:{company}] skip (unexpected payload)", file=sys.stderr)
+        return out
     for j in data:
-        cats = j.get("categories") or {}
-        sr = j.get("salaryRange") or {}
-        out.append(posting(
-            "lever", j.get("id"), company, j.get("text"),
-            cats.get("location"), j.get("workplaceType") or cats.get("workplaceType") or "",
-            j.get("descriptionPlain") or j.get("description") or "",
-            pay_min=sr.get("min"), pay_max=sr.get("max"),
-            pay_interval=sr.get("interval", ""), url=j.get("hostedUrl", ""),
-            posted_at=str(j.get("createdAt", ""))))
+        try:
+            cats = j.get("categories") or {}
+            sr = j.get("salaryRange") or {}
+            # only trust structured pay when it's USD (or unspecified); a non-USD
+            # amount must not be normalized as USD and clear the $30/hr floor.
+            usd = (sr.get("currency") or "USD").upper() == "USD"
+            out.append(posting(
+                "lever", j.get("id"), company, j.get("text"),
+                cats.get("location"), j.get("workplaceType") or cats.get("workplaceType") or "",
+                j.get("descriptionPlain") or j.get("description") or "",
+                pay_min=sr.get("min") if usd else None,
+                pay_max=sr.get("max") if usd else None,
+                pay_interval=sr.get("interval", "") if usd else "",
+                url=j.get("hostedUrl", ""),
+                posted_at=str(j.get("createdAt", ""))))
+        except Exception as e:
+            print(f"  [lever:{company}] bad record skipped ({e})", file=sys.stderr)
     return out
 
 
@@ -222,17 +299,24 @@ def fetch_ashby(board):
     except Exception as e:
         print(f"  [ashby:{board}] skip ({e})", file=sys.stderr)
         return out
-    for j in data.get("jobs", []):
-        comp = j.get("compensation") or {}
-        summary = comp.get("compensationTierSummary") or ""
-        pmax, _ = parse_pay_from_text(summary) if summary else (None, None)
-        loc = j.get("location") or ""
-        workplace = "remote" if j.get("isRemote") else ""
-        out.append(posting(
-            "ashby", j.get("id"), board, j.get("title"), loc, workplace,
-            j.get("descriptionHtml") or j.get("descriptionPlain") or "",
-            pay_max=pmax, pay_interval="hour" if pmax else "",
-            url=j.get("jobUrl") or j.get("applyUrl") or "", posted_at=j.get("publishedAt", "")))
+    jobs = data.get("jobs") if isinstance(data, dict) else None
+    if not isinstance(jobs, list):
+        print(f"  [ashby:{board}] skip (unexpected payload)", file=sys.stderr)
+        return out
+    for j in jobs:
+        try:
+            comp = j.get("compensation") or {}
+            summary = comp.get("compensationTierSummary") or ""
+            pmax, _ = parse_pay_from_text(summary) if summary else (None, None)
+            loc = j.get("location") or ""
+            workplace = "remote" if j.get("isRemote") else ""
+            out.append(posting(
+                "ashby", j.get("id"), board, j.get("title"), loc, workplace,
+                j.get("descriptionHtml") or j.get("descriptionPlain") or "",
+                pay_max=pmax, pay_interval="hour" if pmax else "",
+                url=j.get("jobUrl") or j.get("applyUrl") or "", posted_at=j.get("publishedAt", "")))
+        except Exception as e:
+            print(f"  [ashby:{board}] bad record skipped ({e})", file=sys.stderr)
     return out
 
 
@@ -252,17 +336,26 @@ def fetch_usajobs(keywords, api_key, email, remote_only=True):
         except Exception as e:
             print(f"  [usajobs:{kw}] skip ({e})", file=sys.stderr)
             continue
-        for item in (data.get("SearchResult", {}) or {}).get("SearchResultItems", []):
-            d = item.get("MatchedObjectDescriptor", {})
-            rem = (d.get("PositionRemuneration") or [{}])[0]
-            pmin = _to_float(rem.get("MinimumRange"))
-            pmax = _to_float(rem.get("MaximumRange"))
-            out.append(posting(
-                "usajobs", d.get("PositionID"), d.get("OrganizationName", "Federal"),
-                d.get("PositionTitle"), d.get("PositionLocationDisplay"),
-                "remote", (d.get("UserArea", {}).get("Details", {}) or {}).get("JobSummary", ""),
-                pay_min=pmin, pay_max=pmax, pay_interval=rem.get("RateIntervalCode", ""),
-                url=d.get("PositionURI", ""), posted_at=d.get("PublicationStartDate", "")))
+        sr = data.get("SearchResult") if isinstance(data, dict) else None
+        items = sr.get("SearchResultItems") if isinstance(sr, dict) else None
+        if not isinstance(items, list):
+            print(f"  [usajobs:{kw}] skip (unexpected payload)", file=sys.stderr)
+            continue
+        for item in items:
+            try:
+                d = item.get("MatchedObjectDescriptor", {}) or {}
+                rem_list = d.get("PositionRemuneration")
+                rem = rem_list[0] if isinstance(rem_list, list) and rem_list else {}
+                pmin = _to_float(rem.get("MinimumRange"))
+                pmax = _to_float(rem.get("MaximumRange"))
+                out.append(posting(
+                    "usajobs", d.get("PositionID"), d.get("OrganizationName", "Federal"),
+                    d.get("PositionTitle"), d.get("PositionLocationDisplay"),
+                    "remote", (d.get("UserArea", {}).get("Details", {}) or {}).get("JobSummary", ""),
+                    pay_min=pmin, pay_max=pmax, pay_interval=rem.get("RateIntervalCode", ""),
+                    url=d.get("PositionURI", ""), posted_at=d.get("PublicationStartDate", "")))
+            except Exception as e:
+                print(f"  [usajobs:{kw}] bad record skipped ({e})", file=sys.stderr)
     return out
 
 
@@ -284,10 +377,15 @@ def f_rcm(p, title_keywords):
 def f_remote(p):
     blob = f"{p['workplace']} {p['location']} {p['description']}"
     wp = p["workplace"].lower()
+    # explicit negation first: 'remote not available', 'non-remote', etc.
+    if NEG_REMOTE_FLAGS.search(blob):
+        return "hybrid_or_onsite"
     if wp in ("on-site", "onsite", "hybrid"):
         return "hybrid_or_onsite"
-    if HYBRID_FLAGS.search(blob) and not re.search(r"fully remote|100% remote", blob, re.I):
-        # hybrid/onsite/geo-restriction language present
+    # geo language ('located in ...') only means hybrid when it isn't the benign
+    # 'located in any US state' / 'work from anywhere' remote-affirming phrasing.
+    remote_affirmed = bool(REMOTE_ANYWHERE_FLAGS.search(blob))
+    if HYBRID_FLAGS.search(blob) and not remote_affirmed:
         return "hybrid_or_onsite"
     if wp == "remote" or REMOTE_FLAGS.search(blob):
         return "remote"
@@ -301,10 +399,16 @@ def f_pay(p):
     return "ge30" if h >= FLOOR_HOURLY else "lt30"
 
 
+def _signal_hits(text, signals):
+    # Leading word-boundary match: counts 'coding' but not 'encoding', 'denial(s)'
+    # but not arbitrary substrings; stems like 'negotiat' still match 'negotiate'.
+    return sum(1 for s in signals if re.search(r"\b" + re.escape(s), text))
+
+
 def f_offshore_resistant(p):
     text = f"{p['title']} {p['description']}".lower()
-    on = sum(1 for s in ONSHORE_SIGNALS if s in text)
-    off = sum(1 for s in OFFSHORE_SIGNALS if s in text)
+    on = _signal_hits(text, ONSHORE_SIGNALS)
+    off = _signal_hits(text, OFFSHORE_SIGNALS)
     resistant = on >= 1 and on >= off
     return resistant, on, off
 
@@ -338,16 +442,47 @@ def classify(p, title_keywords):
 # State (freshness / net-new flow)
 # ----------------------------------------------------------------------------
 def load_state(path):
-    if os.path.exists(path):
+    if not os.path.exists(path):
+        return {}
+    try:
         with open(path) as f:
             return json.load(f)
-    return {}
+    except (ValueError, OSError) as e:
+        # a truncated/corrupt state file (e.g. a run killed mid-write) must not
+        # crash every subsequent run — start fresh rather than abort the experiment
+        print(f"  [state] ignoring unreadable state file ({e}); starting fresh",
+              file=sys.stderr)
+        return {}
 
 
 def save_state(path, state):
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    with open(path, "w") as f:
+    tmp = path + ".tmp"
+    with open(tmp, "w") as f:
         json.dump(state, f, indent=2)
+    os.replace(tmp, path)  # atomic rename — never leaves a half-written seen.json
+
+
+def update_flow_state(deduped, qualifying, state, today):
+    """Record first-seen and first-qualified per posting; return net-new-qualifying.
+
+    A posting counts as net-new the first run it QUALIFIES, even if it was seen
+    earlier while non-qualifying (e.g. pay was unpublished then). Legacy flat
+    {key: date} state values are migrated to the structured record on contact.
+    """
+    qual_keys = {f"{p['source']}:{p['source_id']}" for p in qualifying}
+    new_qual = []
+    for p in deduped:
+        k = f"{p['source']}:{p['source_id']}"
+        rec = state.get(k)
+        if not isinstance(rec, dict):
+            rec = {"first_seen": rec if isinstance(rec, str) else today,
+                   "first_qualified": None}
+            state[k] = rec
+        if k in qual_keys and not rec.get("first_qualified"):
+            rec["first_qualified"] = today
+            new_qual.append(p)
+    return new_qual
 
 
 # ----------------------------------------------------------------------------
@@ -400,16 +535,9 @@ def main():
     s_qual = [p for p in s_offshore if p["_credential"] == "accessible"]
     upper = [p for p in deduped if p["_qualifies_if_pay_unknown"]]
 
-    # net-new flow vs prior runs
-    new_qual = []
-    for p in s_qual:
-        k = f"{p['source']}:{p['source_id']}"
-        if k not in state:
-            new_qual.append(p)
-        state.setdefault(k, today)
-    # record every seen posting's first-seen date too (for broader flow analysis)
-    for p in deduped:
-        state.setdefault(f"{p['source']}:{p['source_id']}", today)
+    # net-new flow vs prior runs (counts the first run a posting QUALIFIES, even
+    # if it was seen earlier while non-qualifying); records first-seen for all.
+    new_qual = update_flow_state(deduped, s_qual, state, today)
     save_state(state_path, state)
 
     def pct(n):
