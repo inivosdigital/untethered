@@ -28,6 +28,8 @@ Pre-build. This repository currently holds the product definition and the resear
 
 - **[Product Requirements Document](./docs/PRD.md)** — the V1 spec: wedge, scope, architecture,
   guardrails, metrics, roadmap.
+- **[Build Roadmap](./docs/BUILD_ROADMAP.md)** — validation-gated, riskiest-assumption-first: the
+  Phase-0 spikes (with go/kill criteria) and the Phase 1→3 build sequence.
 - **Research basis** (`docs/research/`):
   - [Competitive landscape](./docs/research/competitive-landscape.md) — 58 competitors mapped, gaps ranked.
   - [Career level-up coach](./docs/research/level-up-coach.md) — credential paths, 12-month roadmaps.

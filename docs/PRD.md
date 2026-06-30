@@ -132,11 +132,19 @@ not nice-to-haves.
 
 ### 6.1 Mislabel Diagnosis + Résumé Re-Frame Studio  *(the free wedge)*
 - **What:** Detects the user's current vs. latent title bucket and rewrites real experience into the
-  keyword bucket that clears the ATS for $30 roles. Outputs a reframed résumé + a "defense sheet."
+  keyword bucket that surfaces for $30 roles. Outputs a reframed résumé + a "defense sheet."
 - **Why:** Cheapest, fastest, most defensible income lever — the user genuinely *is* mislabeled.
 - **Honesty constraints:** Zero invented skills; every reframed line backed by real experience.
   **Instrument callback rate** (before/after) so the tool can see — and admit — its own failure.
 - **Pre-mortem fix applied:** Don't position as "the only lever"; it's Step 0 of a sequenced plan.
+- **⚠ Build-validation caveat ([roadmap](./BUILD_ROADMAP.md) P0-E):** the reframe→callback *lift* is
+  **unproven** — every favorable number is vendor-conflicted/observational and independent reviewers
+  document "80%+ match, zero callbacks." **It must be A/B-tested (P0-E) before it is marketed**, and we
+  must **correct the mechanism narrative**: "ATS auto-rejects you for keywords" is a debunked myth
+  (~92% of recruiter systems don't content-auto-reject). Sell the true mechanism — **"get found in
+  recruiter Boolean searches and ranked above the pile"** — and optimize for title alignment + 6-second
+  human skim, **not** a Jobscan-style match-percentage (a vanity metric). If the lift reads null,
+  redesign around the two well-grounded legs: **offshore-resistance segmentation + pay-truth.**
 
 ### 6.2 Floor-Truth Pay  *(the differentiator)*
 - **What:** For any job, an honest hourly read: **employer-confirmed** (from ATS comp fields) vs.
@@ -378,3 +386,4 @@ incumbent measures).
 [`docs/research/data-architecture.md`](./research/data-architecture.md),
 [`docs/research/worked-example-laritza.md`](./research/worked-example-laritza.md),
 [`docs/research/employer-program-pressure-test.md`](./research/employer-program-pressure-test.md).
+*Build plan:* [`docs/BUILD_ROADMAP.md`](./BUILD_ROADMAP.md) (validation-gated, riskiest-assumption-first).
