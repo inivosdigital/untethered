@@ -33,6 +33,7 @@ Pre-build. This repository currently holds the product definition and the resear
   - [Career level-up coach](./docs/research/level-up-coach.md) — credential paths, 12-month roadmaps.
   - [Data architecture](./docs/research/data-architecture.md) — the free/legal V1 data + pay stack.
   - [Worked example](./docs/research/worked-example-laritza.md) — the product output on a real résumé.
+  - [Employer-program pressure-test](./docs/research/employer-program-pressure-test.md) — the moat/monetization stress-test (conflict-of-interest, licensing, offshore, comparables).
 
 > Every feature in the PRD survived an independent adversarial **pre-mortem**; every claim traces to
 > the research briefs above.

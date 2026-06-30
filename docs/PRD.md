@@ -251,13 +251,42 @@ radioactive on exactly these mistakes.
 
 ## 10. Monetization & Moat
 
-- **V1:** free to the seeker (the whole funnel and trust story). Optional **subscription** for the
-  coaching tier (Staircase, human-in-the-loop résumé/appeal review, accountability).
-- **The durable moat = the pay-transparent-employer program.** It simultaneously solves provenance
-  (real confirmed wages), liquidity (a paying demand side), and monetization (employer subscriptions /
-  verified-employer badges). **It is the product, not a footnote — fund the demand side day one.**
-- **Later channels:** ZipRecruiter publisher revenue-share (Phase 2 monetization, not a V1 data
-  source); Google Cloud Talent Solution as a paid *ranking* upgrade over jobs we already own.
+> Revised per the employer-program pressure-test ([`docs/research/employer-program-pressure-test.md`](./research/employer-program-pressure-test.md)).
+
+- **The moat is NOT the employer program.** It is **(a) the pre-screened pool of *US-remote-defensible*
+  candidates** in a tight niche, and **(b) the crowdsourced confirmed-pay dataset.** The employer
+  program *monetizes* those — but the pool + data is the durable, defensible asset. This distinction
+  is the leverage that keeps us honest: because we don't *need* employer revenue to have a business,
+  we can walk away from any employer who wants us to soften the policing.
+- **"US-remote-defensible" is a hard targeting rule, not a flavor.** 97% of healthcare orgs outsource
+  RCM and offshore Asia is ~60% of healthcare BPO at 50–70% labor savings — the commoditized
+  back-office is racing offshore. Steer both sides toward **offshore-resistant, higher-ACV roles**
+  (bilingual patient-facing, complex denials/appeals needing US payer knowledge, compliance-sensitive,
+  RC analyst) and away from commodity data-entry billing. These are also the $30+ Staircase
+  destinations and where the target user's edge matters.
+- **V1 monetization — lead with the conflict-free wallets:**
+  - **Consumer subscription** (coaching tier: Staircase, human-in-the-loop résumé/appeal review,
+    accountability). Zero conflict.
+  - **Aligned B2B:** RCM **staffing firms** and **workforce-development funders** (colleges, WIOA,
+    Year-Up-style nonprofits whose *funders* pay to place graduates) + employer **L&D budgets** — a
+    $45B→$82B staffing market that already buys external sourcing, with interests aligned to the worker.
+- **The pay-transparent-employer program = a Phase-3, gated monetization *layer*** (not the launch
+  moat). Hard structural rules, each evidence-backed by the Glassdoor/Indeed/Yelp precedent:
+  1. **Entry is gated by the same trust criteria we police** (confirmed ≥$30, true-remote, no scam
+     patterns, acceptable churn). Passing the bar *is* the price of admission → adverse selection
+     flips to positive selection, and money can't buy a softer flag.
+  2. **Structural (auditable) separation of revenue from ranking/moderation** — not a policy promise.
+  3. **Remove — never merely deprioritize — bad-faith listings** (the Indeed lesson).
+  4. **Money buys access + a behavior-earned, revocable, public-criteria badge — never rank.** Paid
+     surfaces are plainly labeled.
+  5. **Subscription/access pricing, never per-placement agency fees; never charge the worker** (the
+     licensing-safe posture — NY §191 "employer fee paid" / MA "placement agency" tiers; register
+     where workers are placed: NY/IL/NJ/MA).
+  6. **Retention-aligned** where a success component is used (Hired's 1%×24mo analog) — our revenue
+     screens out churn-and-burn employers. *(Counsel-vetted; subscription core to stay a platform.)*
+  7. **Never sell employer-side comp benchmarking** (antitrust + it weaponizes worker data).
+- **Later channels:** ZipRecruiter publisher revenue-share (Phase 2); Google Cloud Talent Solution as
+  a paid *ranking* upgrade over jobs we already own.
 - **Hard rule:** revenue never comes from betting against the user's paycheck.
 
 ---
@@ -309,17 +338,25 @@ incumbent measures).
 
 ## 14. Open Decisions for the Founder
 
-1. **Counsel timing:** one-time legal review of (a) the extension/Workday-CXS posture and (b) the
-   crowdsource antitrust/privacy design *before* launch?
+1. **Counsel timing:** one-time legal review *before* launch of (a) the extension/Workday-CXS
+   posture, (b) the crowdsource antitrust/privacy design, and (c) **employment-agency exposure** —
+   confirm the subscription/never-charge-the-worker posture and which states need registration (NY/
+   IL/NJ/MA keyed to where workers are placed), plus the *Mobley v. Workday* "matching = agency/agent"
+   risk on the fit-score.
 2. **Adzuna:** pursue the commercial agreement for breadth, or stay on the free spine?
 3. **Score-don't-store line:** confirm we're OK *never* caching gated-board descriptions in V1 (rules
    out server-side search across LinkedIn jobs).
-4. **Employer program go-to-market:** are we prepared for the 12–24-month demand-side grind the moat
-   implies, and who owns it?
-5. **Pay-estimate honesty vs. polish:** how prominently do we surface the "geo-anchored, ~12-mo lag"
-   caveat?
-6. **Persona scope discipline:** stay all-in on healthcare RCM until outcomes are proven, or widen
-   sooner?
+4. **Monetization sequencing:** the pressure-test says lead with consumer subscription + staffing-firm/
+   workforce-funder B2B, and treat the policed-employer program as a gated Phase-3 layer (not the
+   launch moat). Confirm we're aligned — and who owns the eventual employer-side go-to-market?
+5. **Retention-fee vs. pure subscription:** do we want a retention-linked employer success component
+   (best alignment) accepting the added agency-licensing scrutiny, or stay pure-subscription (cleanest
+   legally, less outcome-aligned)?
+6. **Pay-estimate honesty vs. polish:** how prominently do we surface the "geo-anchored, ~12-mo lag"
+   caveat? (Note: the pay-transparency-law tailwind means confirmed ranges on remote postings will
+   grow on their own.)
+7. **Persona scope discipline:** stay all-in on healthcare RCM (offshore-resistant roles first) until
+   outcomes are proven, or widen sooner?
 
 ---
 
@@ -339,4 +376,5 @@ incumbent measures).
 *Appendix — research basis:* [`docs/research/competitive-landscape.md`](./research/competitive-landscape.md),
 [`docs/research/level-up-coach.md`](./research/level-up-coach.md),
 [`docs/research/data-architecture.md`](./research/data-architecture.md),
-[`docs/research/worked-example-laritza.md`](./research/worked-example-laritza.md).
+[`docs/research/worked-example-laritza.md`](./research/worked-example-laritza.md),
+[`docs/research/employer-program-pressure-test.md`](./research/employer-program-pressure-test.md).
