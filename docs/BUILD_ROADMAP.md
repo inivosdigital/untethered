@@ -30,6 +30,11 @@ Run these *before* committing to the product build. Each is a spike with a go an
 
 ### P0-A — Filtered Live-Inventory + Freshness Harvest (THE make-or-break)
 **Effort: 2–4 week harvest, then ongoing 8–12 week flow tracking.**
+> **Harvester implemented:** [`tools/p0a_inventory/`](../tools/p0a_inventory/) runs the free-feed half
+> (Greenhouse/Lever/Ashby/USAJOBS) with the four-filter survival funnel and net-new flow tracking. The
+> funnel logic is unit-validated; populate `config.json` with real ATS board tokens and run it daily.
+> The LinkedIn/Indeed/ZipRecruiter half still needs **manual sampling** (can't be legally harvested).
+
 Harvest core titles across LinkedIn / Indeed / ZipRecruiter / WeWorkRemotely + Greenhouse / Lever / Ashby / USAJOBS. Core titles = **revenue cycle analyst, denials analyst, AR analyst (analyst-titled), complex denials/appeals (non-clinical)**. Hand-label a random sample for survival through each filter: (a) ≥$30/hr posted-or-inferred, (b) genuinely fully-remote (not hybrid/state-restricted), (c) offshore-resistant per the taxonomy, (d) accessible without bachelor's/RN. Report **survival rate per filter** and **resulting daily/weekly net-new count**. Then track the same searches daily for a month to measure **flow, not just stock**.
 - **GO:** Net-new qualifying roles refill at a rate that can sustain recurring engagement (enough fresh ≥$30 archetype-accessible roles per week to keep a user returning), even if stock is in the low tens.
 - **KILL / PIVOT:** Net-new is **single digits/week nationally** across all sources combined, or filter survival on raw inventory is **<5–10%**. If so, the job-board framing is dead — **pivot the product to coaching-staircase-first with the feed as a destination, not the entry point** (the evidence already leans this way).

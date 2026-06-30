@@ -30,6 +30,12 @@ Pre-build. This repository currently holds the product definition and the resear
   guardrails, metrics, roadmap.
 - **[Build Roadmap](./docs/BUILD_ROADMAP.md)** — validation-gated, riskiest-assumption-first: the
   Phase-0 spikes (with go/kill criteria) and the Phase 1→3 build sequence.
+
+## Tools
+
+- **[`tools/p0a_inventory/`](./tools/p0a_inventory/)** — the **P0-A** harvester: measures the live
+  flow of qualifying remote RCM roles (the #1 kill question) from free ATS APIs, with a four-filter
+  survival funnel. Stdlib-only Python; run it daily to track net-new flow.
 - **Research basis** (`docs/research/`):
   - [Competitive landscape](./docs/research/competitive-landscape.md) — 58 competitors mapped, gaps ranked.
   - [Career level-up coach](./docs/research/level-up-coach.md) — credential paths, 12-month roadmaps.

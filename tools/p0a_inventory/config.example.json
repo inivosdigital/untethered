@@ -1,0 +1,20 @@
+{
+  "_comment": "Copy to config.json and replace the board tokens with real ones. Find a company's token from its careers URL: boards.greenhouse.io/<TOKEN>, jobs.lever.co/<COMPANY>, jobs.ashbyhq.com/<BOARD>. Seed with health-tech / RCM-adjacent employers (e.g. revenue-cycle vendors, digital-health, payers). Unknown tokens are skipped gracefully and reported on stderr.",
+
+  "title_keywords": [
+    "revenue cycle analyst", "revenue cycle", "denials analyst", "denial analyst",
+    "denials", "appeals analyst", "appeals", "accounts receivable analyst",
+    "ar analyst", "prior authorization", "patient access", "medical billing",
+    "payer enrollment", "credentialing", "reimbursement", "claims"
+  ],
+
+  "greenhouse_boards": ["REPLACE_with_greenhouse_board_token"],
+  "lever_companies": ["REPLACE_with_lever_company"],
+  "ashby_boards": ["REPLACE_with_ashby_board"],
+
+  "usajobs": {
+    "enabled": false,
+    "remote_only": true,
+    "keywords": ["revenue cycle", "medical records", "denials", "patient access", "medical billing"]
+  }
+}

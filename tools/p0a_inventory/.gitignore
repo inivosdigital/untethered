@@ -1,0 +1,6 @@
+# user-specific config and harvested data — never commit
+config.json
+data/
+_smoke/
+__pycache__/
+*.pyc
