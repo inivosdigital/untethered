@@ -17,7 +17,7 @@ from typing import Callable, List, Optional, Tuple
 from reframe import taxonomy
 from reframe.guardrails import check_edit
 from reframe.schema import Edit, ReframeProposal
-from reframe.segment import ResumeDoc, segment
+from reframe.segment import ResumeDoc, flex_pattern, segment
 
 # Which accepted edits each mode keeps. Enforced deterministically here even
 # though the proposer is also told the mode - defense in depth.
@@ -64,32 +64,34 @@ class ReframeResult:
 def apply_edits(resume, edits, doc=None):
     """Write accepted edits into the resume.
 
-    With a :class:`ResumeDoc`, an edit is spliced into its field's exact raw
-    window (``doc.resolve``); splices are applied back-to-front so earlier
-    offsets stay valid across multiple edits. Anything that does not resolve to a
-    splice-safe window - no doc, interleaved (two-column) text, a cross-section
-    or absent field, or an ambiguous match - falls back to the whole-resume
-    first-occurrence replace, i.e. exactly the prior behavior. The result is
-    therefore always at least as safe as the global replace and never splices a
-    field edit into the wrong region.
+    Every edit is first resolved to an offset span in the ORIGINAL resume - via
+    ``doc.resolve`` (field-scoped, splice-safe window) when a doc is present, or a
+    word-boundary first-occurrence search otherwise (no doc, interleaved text, a
+    cross-section or absent field, an ambiguous match). Resolving all edits
+    against the unmodified string before touching it means an earlier splice can
+    never shift, hijack, or cascade into a later edit's target. The spans are then
+    spliced back-to-front so offsets stay valid, with overlapping spans skipped
+    defensively. Word-boundary matching also prevents splicing into the middle of
+    a longer word. The result is always at least as safe as a global replace and
+    never lands a field edit in the wrong region.
     """
-    splices, fallbacks = [], []
+    spans = []
     for e in edits:
         span = doc.resolve(e.before, e.field, e.source_span) if doc else None
+        if span is None and e.before:
+            pat = flex_pattern(e.before)
+            m = pat.search(resume) if pat else None
+            if m:
+                span = (m.start(), m.end())
         if span:
-            splices.append((span[0], span[1], e.after))
-        elif e.before:
-            fallbacks.append((e.before, e.after))
+            spans.append((span[0], span[1], e.after))
 
     out, used = resume, []
-    for start, end, after in sorted(splices, key=lambda x: x[0], reverse=True):
+    for start, end, after in sorted(spans, key=lambda s: s[0], reverse=True):
         if any(not (end <= u0 or start >= u1) for u0, u1 in used):
-            continue  # overlapping splice (proposer conflict) -> skip defensively
+            continue  # overlapping target (proposer conflict) -> skip defensively
         out = out[:start] + after + out[end:]
         used.append((start, end))
-    for before, after in fallbacks:
-        if before in out:
-            out = out.replace(before, after, 1)
     return out
 
 

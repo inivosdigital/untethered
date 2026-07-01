@@ -48,8 +48,11 @@ def clean_text(raw):
 
 
 def load_text_stream(fh):
-    """Read an already-open text handle (file, StringIO) and clean it."""
-    return clean_text(fh.read())
+    """Read an already-open text or binary handle and clean it."""
+    data = fh.read()
+    if isinstance(data, (bytes, bytearray)):
+        data = bytes(data).decode("utf-8", errors="replace")
+    return clean_text(data)
 
 
 def _load_pdf(path):
@@ -99,5 +102,10 @@ def load_resume(source=None, kind=None):
     if fmt == "docx":
         return _load_docx(path)
     # text / md / anything else: read as UTF-8 text, tolerating bad bytes.
-    with open(path, encoding="utf-8", errors="replace") as fh:
-        return clean_text(fh.read())
+    # Wrap OS-level failures (directory, permission, missing) so no raw traceback
+    # - which would echo the name-bearing file path - escapes the module.
+    try:
+        with open(path, encoding="utf-8", errors="replace") as fh:
+            return clean_text(fh.read())
+    except OSError:
+        raise IngestError("text", "the file could not be read") from None

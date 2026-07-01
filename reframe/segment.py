@@ -73,6 +73,20 @@ class SegmentError(Exception):
     """Raised when the partition invariants cannot be satisfied."""
 
 
+def flex_pattern(text):
+    """Compile ``text`` into a whitespace-flexible, word-boundary-anchored regex.
+
+    Tokens are joined by ``\\s+`` (so a phrase wrapped across lines still matches)
+    and flanked by ``(?<!\\w)`` / ``(?!\\w)`` (so a match is never part of a longer
+    word - ``coding`` will not match inside ``Transcoding``). Returns None for
+    empty/whitespace-only input.
+    """
+    toks = [re.escape(t) for t in (text or "").split()]
+    if not toks:
+        return None
+    return re.compile(r"(?<!\w)" + r"\s+".join(toks) + r"(?!\w)")
+
+
 @dataclass
 class Segment:
     field: str
@@ -105,14 +119,16 @@ class ResumeDoc:
         exact ``(start, end)`` in ``source``, or None to defer to the caller's
         whole-resume fallback.
 
-        Whitespace-flexible (so a phrase wrapped across lines still matches).
-        On >1 candidate, ``source_span`` disambiguates; still ambiguous -> None.
-        Only splice_safe segments are eligible, so a wrong-region splice on
-        interleaved (two-column) text is structurally impossible.
+        Whitespace-flexible (so a phrase wrapped across lines still matches) and
+        word-boundary-anchored (so ``coding`` never matches inside ``Transcoding``
+        and splices into the middle of a word). On >1 candidate, ``source_span``
+        disambiguates by containment (the candidate must sit inside a source_span
+        match); still ambiguous -> None. Only splice_safe segments are eligible,
+        so a wrong-region splice on interleaved (two-column) text is impossible.
         """
         if not (before or "").strip():
             return None
-        pat = self._flex(before)
+        pat = flex_pattern(before)
         if pat is None:
             return None
         cands = []
@@ -124,22 +140,16 @@ class ResumeDoc:
         if len(cands) == 1:
             return cands[0]
         if len(cands) > 1 and source_span:
-            span_pat = self._flex(source_span)
+            span_pat = flex_pattern(source_span)
             if span_pat is not None:
+                matches = list(span_pat.finditer(self.source))
                 narrowed = [
                     c for c in cands
-                    if span_pat.search(self.source, max(0, c[0] - 400), c[1] + 400)
+                    if any(m.start() <= c[0] and c[1] <= m.end() for m in matches)
                 ]
                 if len(narrowed) == 1:
                     return narrowed[0]
         return None
-
-    @staticmethod
-    def _flex(text):
-        toks = [re.escape(t) for t in text.split()]
-        if not toks:
-            return None
-        return re.compile(r"\s+".join(toks))
 
 
 # --------------------------------------------------------------------------- #
@@ -267,6 +277,8 @@ def _has_columns(lines, lo, hi):
 
 def _make(field, lines, lo, hi, *, conf, source, normalized=None,
           strip_bullet=False, skip_heading=False, has_heading=False):
+    if hi <= lo:
+        raise SegmentError(f"empty segment range [{lo}, {hi})")
     start = lines[lo].char_start
     end = lines[hi - 1].char_end
     if normalized is None:
@@ -313,7 +325,12 @@ def _split_experience(lines, lo, hi, source):
 def _split_preamble(lines, lo, hi, source, has_summary_section):
     """The block before the first heading -> a headline segment, plus a summary
     segment if a heading-less prose paragraph follows the contact/title block and
-    no explicit Summary section exists elsewhere."""
+    no explicit Summary section exists elsewhere.
+
+    Returns [] when the range is empty (the resume leads with a heading, so there
+    is no preamble and therefore no headline segment)."""
+    if lo >= hi:
+        return []
     prose = None
     seen_nonblank = 0
     for i in range(lo, hi):

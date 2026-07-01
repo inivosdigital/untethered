@@ -67,5 +67,22 @@ class LazyFormats(unittest.TestCase):
         self.assertEqual(cm.exception.fmt, "docx")
 
 
+class ReviewRegressions(unittest.TestCase):
+    def test_directory_path_raises_ingest_error_without_path(self):
+        # finding #6: an OS error (directory) must be wrapped, not escape raw,
+        # and the message must not leak the (name-bearing) path.
+        with tempfile.TemporaryDirectory() as d:
+            named = os.path.join(d, "Jane_Doe_Resume")
+            os.mkdir(named)
+            with self.assertRaises(ingest.IngestError) as cm:
+                ingest.load_resume(named)
+        self.assertEqual(cm.exception.fmt, "text")
+        self.assertNotIn("Jane_Doe", str(cm.exception))
+
+    def test_bytes_handle_is_decoded(self):
+        # finding #7: a binary handle must not blow up clean_text with a TypeError.
+        self.assertEqual(ingest.load_resume(io.BytesIO(b"a\r\nb")), "a\nb")
+
+
 if __name__ == "__main__":
     unittest.main()

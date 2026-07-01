@@ -86,5 +86,47 @@ class OffsetSafety(unittest.TestCase):
         self.assertIn("Reconciled daily batches.", out)
 
 
+class ReviewRegressions(unittest.TestCase):
+    """Guards for the confirmed adversarial-review findings."""
+
+    def test_fallback_does_not_hijack_a_prior_splice(self):
+        # finding #2: a splice inserts a phrase that a later fallback then matched
+        # in the (old) mutated string. Resolving all edits against the ORIGINAL
+        # resume first must keep the fallback on its real target.
+        resume = (
+            "Ann Lee\nBiller\n\nSummary\nExperienced biller.\n\n"
+            "Experience\nAcme, Biller (2019)\n"
+            "- Denials work performed here.\n"
+            "- Denials work performed here.\n"
+        )
+        doc = segment(resume)
+        e1 = edit("summary", "Experienced biller.", "Denials work performed here.")
+        e2 = edit("bullet", "Denials work performed here.", "Resolved denials across payers.")
+        out = apply_edits(resume, [e1, e2], doc)
+        # the summary got e1's text and was NOT hijacked into e2's 'after'
+        self.assertIn("Summary\nDenials work performed here.", out)
+        self.assertNotIn("Summary\nResolved denials across payers.", out)
+
+    def test_fallback_edits_do_not_cascade(self):
+        # finding #3: an earlier fallback's 'after' must not create a new match
+        # that a later fallback then hits instead of its pre-existing target.
+        resume = "no headers here at all\none line: coder\nanother: senior coder role\n"
+        doc = segment(resume)
+        e1 = edit("skills", "coder", "senior coder")          # -> line 2, resolves nowhere
+        e2 = edit("skills", "senior coder", "certified coder")  # -> pre-existing line 3
+        out = apply_edits(resume, [e1, e2], doc)
+        self.assertIn("one line: senior coder", out)
+        self.assertIn("another: certified coder role", out)
+
+    def test_no_mid_word_splice(self):
+        # finding #4: 'coding' must not match inside 'Transcoding' and corrupt it.
+        resume = "Skills\nTranscoding, resolution, Epic\n"
+        doc = segment(resume)
+        e = edit("skills", "coding", "coding and auditing")
+        out = apply_edits(resume, [e], doc)
+        self.assertIn("Transcoding", out)  # untouched
+        self.assertNotIn("Transcoding and auditing", out)
+
+
 if __name__ == "__main__":
     unittest.main()

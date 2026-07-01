@@ -109,6 +109,41 @@ class Resolve(unittest.TestCase):
     def test_absent_field_returns_none(self):
         self.assertIsNone(self.doc.resolve("Handled claims for the team every day.", "skills"))
 
+    def test_long_source_span_disambiguates_duplicates(self):
+        # finding #5: a source_span longer than the old +/-400 window must still
+        # pick the right duplicate by containment.
+        long_bullet = "Reviewed claims for accuracy " + ("across many payers " * 30) + "daily."
+        resume = (
+            "Jane Doe\nAnalyst\n\nSummary\nRevenue cycle analyst.\n\n"
+            "Experience\nAcme, Analyst (2019)\n"
+            f"- {long_bullet}\n"
+            "Beta, Analyst (2015)\n"
+            "- Reviewed claims for accuracy.\n\n"
+            "Skills\nEpic\n"
+        )
+        self.assertGreater(len(long_bullet), 400)
+        doc = seg.segment(resume)
+        span = doc.resolve("Reviewed claims for accuracy", "bullet", source_span=long_bullet)
+        self.assertIsNotNone(span)
+        self.assertLess(span[0], resume.index("Beta"))  # the FIRST (long) bullet
+
+
+class HeadingFirstResume(unittest.TestCase):
+    def test_no_phantom_headline_when_first_line_is_a_heading(self):
+        # finding #1: a resume that leads with a heading must NOT produce a
+        # whole-doc or empty headline segment; the partition must still hold.
+        resume = (
+            "Professional Summary\n"
+            "Detail-oriented billing specialist with 5 years in revenue cycle.\n\n"
+            "Experience\nAcme Health, Billing Specialist (2019-2022)\n- Handled claims.\n\n"
+            "Skills\nEpic, claim resolution\n"
+        )
+        doc = seg.segment(resume)
+        _assert_partition(self, doc)
+        self.assertEqual(doc.field_windows("headline"), [])  # no headline region
+        # summary is still correctly captured under its heading
+        self.assertIn("Detail-oriented billing specialist", doc.field_text("summary"))
+
 
 if __name__ == "__main__":
     unittest.main()
