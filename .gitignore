@@ -1,0 +1,12 @@
+# Python artifacts
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Virtualenvs (the reframe live-path venv lives outside the repo, but guard anyway)
+.venv/
+venv/
+
+# Runtime logs and local state (never commit)
+*.log

@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://untethered/scoring/pay_report.schema.json",
+  "title": "PayReport",
+  "description": "One crowdsourced real-pay data point. Aggregated at (canonicalRole x geo x remoteMode) grain by pay.crowd_aggregate / crowdAggregate, which DISPLAYS a stat only past the moat-safe density gates: >=5 distinct contributors, >=3 months span, and no single sourceType > 25% of reports. Until dense, the aggregate abstains and the UI falls back to posted pay or the OEWS band. Storage is F3 (SQLite -> Postgres); this is the record contract.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["canonicalRole", "geo", "remoteMode", "hourly", "currency", "sourceType", "contributorId", "reportedAt", "consent"],
+  "properties": {
+    "id": { "type": "string", "description": "opaque record id" },
+    "canonicalRole": { "type": "string", "description": "normalized RCM role, e.g. 'denials analyst', 'medical biller' (maps to the scoring rubric's title vocabulary)" },
+    "geo": { "type": "string", "description": "US state or metro; 'US' for national-remote" },
+    "remoteMode": { "type": "string", "enum": ["remote", "hybrid", "onsite"] },
+    "hourly": { "type": "number", "description": "normalized to USD/hr", "minimum": 1 },
+    "currency": { "type": "string", "default": "USD" },
+    "sourceType": {
+      "type": "string",
+      "enum": ["self-reported", "offer-letter", "paystub", "levels", "h1b", "glassdoor", "other"],
+      "description": "provenance; the >25% share gate stops any single source from dominating an aggregate"
+    },
+    "contributorId": { "type": "string", "description": "pseudonymous; powers de-dup + the >=5-contributor gate. NOT PII." },
+    "reportedAt": { "type": "string", "format": "date", "description": "for the >=3-month span gate and recency weighting" },
+    "consent": { "type": "boolean", "description": "explicit, revocable consent to aggregate. A report may be deleted on request (GDPR/CCPA); aggregates recompute." },
+    "note": { "type": "string" }
+  },
+  "_gates": {
+    "min_contributors": 5,
+    "min_months_span": 3,
+    "max_single_source_share": 0.25,
+    "rationale": "antitrust/privacy-safe pay sharing needs density before display; below the gates the aggregate abstains rather than assert a thin, gameable number (mirrors the OEWS-prior abstain discipline from P0-D)."
+  }
+}

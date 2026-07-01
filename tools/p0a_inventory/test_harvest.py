@@ -71,9 +71,26 @@ class ParsePayFromTextTests(unittest.TestCase):
         hourly, _ = harvest.parse_pay_from_text("Generous $5,250 tuition reimbursement")
         self.assertIsNone(hourly)
 
-    def test_explicit_hourly_range_kept(self):
+    def test_hourly_range_uses_lower_bound(self):
+        # floor semantics: a $32-$40/hr role clears $30 on its LOWER bound, not its top
         hourly, _ = harvest.parse_pay_from_text("Pay range $32 - $40 per hour")
-        self.assertAlmostEqual(hourly, 40.0, places=2)
+        self.assertAlmostEqual(hourly, 32.0, places=2)
+
+    def test_straddling_range_does_not_report_top_as_floor(self):
+        # the false-floor bug: a $22-$34/hr range must read $22 (below floor), not $34
+        hourly, _ = harvest.parse_pay_from_text("Compensation: $22 - $34 per hour")
+        self.assertAlmostEqual(hourly, 22.0, places=2)
+
+    def test_annual_straddling_range_uses_lower_bound(self):
+        # $45k-$70k straddles $30/hr; must read ~$21.6 (lower), not the $70k top
+        hourly, _ = harvest.parse_pay_from_text("Salary range $45,000 - $70,000 per year")
+        self.assertAlmostEqual(hourly, 45000 / HPY, places=2)
+
+    def test_range_ratio_guard_ignores_typo_artifact(self):
+        # "$120.000" (European-decimal typo) parses as 120; the 608x gap must be
+        # rejected as a range so the figure falls back to the real $73k salary
+        hourly, _ = harvest.parse_pay_from_text("Salary Range: $73,000-$120.000 / year")
+        self.assertAlmostEqual(hourly, 73000 / HPY, places=2)
 
     def test_annual_salary_kept(self):
         hourly, _ = harvest.parse_pay_from_text("Salary: $95,000 annually")
@@ -148,7 +165,8 @@ class FetcherRobustnessTests(unittest.TestCase):
         with self._patch_http(payload):
             result = harvest.fetch_lever("acme")
         self.assertEqual(len(result), 1)
-        self.assertAlmostEqual(result[0]["pay_hourly"], 36.0, places=2)
+        # floor = lower bound of the structured range ($31-$36 -> $31)
+        self.assertAlmostEqual(result[0]["pay_hourly"], 31.0, places=2)
 
 
 # ---------------------------------------------------------------------------
@@ -187,6 +205,21 @@ class RemoteClassifierTests(unittest.TestCase):
     def test_genuine_hybrid_still_flagged(self):
         p = harvest.posting("x", "3", "e", "Biller", "Dallas", "hybrid",
                             "Hybrid role, 3 days per week in office.")
+        self.assertEqual(harvest.f_remote(p), "hybrid_or_onsite")
+
+    def test_nationwide_us_residency_is_remote_not_hybrid(self):
+        # F4 fix: a nationwide-US residency requirement is fully-remote, not hybrid/state-
+        # restricted. Previously "remote, must reside in the US" was dropped at stage 3.
+        for text in ["Remote position. You must be located in the United States.",
+                     "100% remote; candidates must reside in the US.",
+                     "Remote role; you may live in the USA."]:
+            p = harvest.posting("x", "9", "e", "AR Analyst", "United States", "", text)
+            self.assertEqual(harvest.f_remote(p), "remote", text)
+
+    def test_single_state_restricted_remote_still_rejected(self):
+        # a single-state residency requirement is NOT fully-remote and stays rejected
+        p = harvest.posting("x", "10", "e", "AR Analyst", "CA", "",
+                            "Remote, but you must reside in California.")
         self.assertEqual(harvest.f_remote(p), "hybrid_or_onsite")
 
 
@@ -287,7 +320,91 @@ class CurrencyTests(unittest.TestCase):
         }])
         with self._patch_http(payload):
             result = harvest.fetch_lever("acme")
-        self.assertAlmostEqual(result[0]["pay_hourly"], 75000 / HPY, places=2)
+        # floor = lower bound of the USD range ($65k-$75k -> $65k)
+        self.assertAlmostEqual(result[0]["pay_hourly"], 65000 / HPY, places=2)
+
+
+# ---------------------------------------------------------------------------
+# MED #10 — role-TYPE archetype filter: the funnel must count only accessible
+# individual-contributor RCM roles, not leadership / wrong-function / clinical
+# titles that merely mention revenue-cycle work.
+# ---------------------------------------------------------------------------
+class RoleArchetypeTests(unittest.TestCase):
+    def _arch(self, title):
+        p = harvest.posting("greenhouse", "1", "e", title, "Remote", "remote",
+                            "Denials and appeals; payer policy disputes.")
+        return harvest.f_role_archetype(p)
+
+    def test_accessible_ic_titles_kept(self):
+        for t in [
+            "Revenue Cycle Analyst",
+            "Associate Revenue Cycle Analyst - Prior Authorizations",
+            "Denials Analyst", "AR Analyst", "Appeals Technician",
+            "Utilization Management Appeals Technician",   # 'Management' != 'Manager'
+            "Inpatient Coder Associate, Payment Integrity",
+            "Senior Claims Auditor - DRG",                 # 'Senior' IC is still accessible
+            "Credentialing Specialist", "Payer Enrollment Specialist",
+            "Patient Access Representative",               # 'access' != 'market access'
+            "Patient Account Representative",              # 'account' != 'account manager'
+            "Patient Financial Counselor",                 # 'counselor' != 'counsel'
+            "Medical Staff Coordinator",                   # credentialing role, no 'staff' rule
+            "Denials Team Lead", "Credentialing Program Lead",   # bare 'Lead' kept
+            "Revenue Cycle Team Leader", "Appeals Program Leader",  # working-'Leader' kept
+        ]:
+            self.assertTrue(self._arch(t), f"should KEEP: {t}")
+
+    def test_leadership_titles_excluded(self):
+        for t in [
+            "Revenue Cycle Management / RCM Leader",
+            "VP, Provider Reimbursement and Contracting",
+            "Director, Revenue Cycle Management",
+            "Senior Manager, Back End Revenue Cycle",
+            "Credentialing Manager", "Head of Revenue Cycle",
+            "Chief Financial Officer", "Principal Revenue Cycle Consultant",
+        ]:
+            self.assertFalse(self._arch(t), f"should EXCLUDE (leadership): {t}")
+
+    def test_wrong_function_titles_excluded(self):
+        for t in [
+            "Director of Engineering (Patient)", "Staff Product Manager, AI",
+            "Group Product Manager, SmarterDenials", "Sales Director",
+            "Senior Account Manager", "Account Executive, Revenue Cycle",
+            "VP, Product Marketing", "Associate General Counsel (Healthtech)",
+            "People Operations Generalist", "Director of Procurement",
+            "Healthcare RCM Client Success Manager", "RCM Solutions Lead",
+            "Senior Engagement Manager", "HEOR Science Liaison",
+        ]:
+            self.assertFalse(self._arch(t), f"should EXCLUDE (function): {t}")
+
+    def test_clinical_credentialed_titles_excluded(self):
+        for t in ["Appeals Pharmacist", "Clinical, Formulary Management Pharmacist",
+                  "Utilization Review Nurse Practitioner"]:
+            self.assertFalse(self._arch(t), f"should EXCLUDE (clinical): {t}")
+
+    def test_role_archetype_uses_title_not_body(self):
+        # A clean IC title must survive even when the BODY name-drops leadership/sales.
+        p = harvest.posting("greenhouse", "2", "e", "Denials Analyst", "Remote", "remote",
+                            "Reports to the Director of Revenue Cycle; partner with Sales.")
+        self.assertTrue(harvest.f_role_archetype(p))
+
+    def test_classify_leadership_rcm_role_does_not_qualify(self):
+        # Fully remote, well-paid, offshore-resistant, no credential gate — but a
+        # DIRECTOR title, so it must NOT qualify strict once the archetype filter is on.
+        p = harvest.posting("greenhouse", "3", "e", "Director, Revenue Cycle Management",
+                            "Remote - US", "remote",
+                            "Lead denials and appeals strategy. $180,000 annually.")
+        harvest.classify(p, harvest.DEFAULT_TITLE_KEYWORDS)
+        self.assertTrue(p["_rcm"])
+        self.assertFalse(p["_role_archetype"])
+        self.assertFalse(p["_qualifies_strict"])
+
+    def test_classify_ic_rcm_role_still_qualifies(self):
+        p = harvest.posting("greenhouse", "4", "e", "Denials & Appeals Analyst",
+                            "Remote - US", "remote",
+                            "Manage payer denials and file appeals. $75,000 annually.")
+        harvest.classify(p, harvest.DEFAULT_TITLE_KEYWORDS)
+        self.assertTrue(p["_role_archetype"])
+        self.assertTrue(p["_qualifies_strict"])
 
 
 if __name__ == "__main__":

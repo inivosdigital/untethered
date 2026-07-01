@@ -1,0 +1,280 @@
+{
+  "release": "OEWS May 2025 (national, all-industry; via BLS API v2, 2026-07-01)",
+  "floor_hourly": 30.0,
+  "soc_wages": {
+    "43-3021": {
+      "title": "Billing and Posting Clerks",
+      "median": 23.32,
+      "mean": 24.55,
+      "p10": 17.93,
+      "p25": 20.6,
+      "p75": 28.02,
+      "p90": 32.55
+    },
+    "43-9061": {
+      "title": "Office Clerks, General",
+      "median": 21.64,
+      "mean": 22.32,
+      "p10": 14.57,
+      "p25": 17.48,
+      "p75": 26.11,
+      "p90": 31.1
+    },
+    "29-2072": {
+      "title": "Medical Records Specialists",
+      "median": 24.59,
+      "mean": 27.3,
+      "p10": 17.79,
+      "p25": 20.91,
+      "p75": 31.17,
+      "p90": 39.01
+    },
+    "43-4051": {
+      "title": "Customer Service Representatives",
+      "median": 21.53,
+      "mean": 22.4,
+      "p10": 15.27,
+      "p25": 17.72,
+      "p75": 24.89,
+      "p90": 30.57
+    },
+    "43-6013": {
+      "title": "Medical Secretaries and Administrative Assistants",
+      "median": 22.08,
+      "mean": 22.5,
+      "p10": 17.27,
+      "p25": 18.54,
+      "p75": 24.32,
+      "p90": 29.1
+    },
+    "29-2099": {
+      "title": "Health Technologists and Technicians, All Other",
+      "median": 24.18,
+      "mean": 28.23,
+      "p10": 18.36,
+      "p25": 21.24,
+      "p75": 30.93,
+      "p90": 40.99
+    },
+    "43-3011": {
+      "title": "Bill and Account Collectors",
+      "median": 22.61,
+      "mean": 23.59,
+      "p10": 16.54,
+      "p25": 18.76,
+      "p75": 27.28,
+      "p90": 31.53
+    },
+    "43-4171": {
+      "title": "Receptionists and Information Clerks",
+      "median": 18.27,
+      "mean": 18.97,
+      "p10": 13.83,
+      "p25": 16.33,
+      "p75": 21.7,
+      "p90": 24.01
+    },
+    "13-1041": {
+      "title": "Compliance Officers",
+      "median": 38.81,
+      "mean": 42.5,
+      "p10": 23.18,
+      "p25": 29.46,
+      "p75": 52.41,
+      "p90": 64.29
+    },
+    "43-3099": {
+      "title": "Financial Clerks, All Other",
+      "median": 25.88,
+      "mean": 27.14,
+      "p10": 19.41,
+      "p25": 22.84,
+      "p75": 29.96,
+      "p90": 36.68
+    },
+    "43-9199": {
+      "title": "Office and Administrative Support Workers, All Other",
+      "median": 21.96,
+      "mean": 23.4,
+      "p10": 14.95,
+      "p25": 16.5,
+      "p75": 28.11,
+      "p90": 34.59
+    }
+  },
+  "crosswalk": [
+    {
+      "label": "revenue cycle analyst",
+      "kw": [
+        "revenue cycle analyst",
+        "revenue cycle",
+        "rev cycle",
+        "rcm analyst"
+      ],
+      "soc": "13-1041",
+      "confidence": "low",
+      "bimodal": true
+    },
+    {
+      "label": "reimbursement analyst",
+      "kw": [
+        "reimbursement"
+      ],
+      "soc": "13-1041",
+      "confidence": "low",
+      "bimodal": true
+    },
+    {
+      "label": "denials analyst",
+      "kw": [
+        "denial"
+      ],
+      "soc": "43-3021",
+      "confidence": "low",
+      "bimodal": true
+    },
+    {
+      "label": "appeals analyst",
+      "kw": [
+        "appeal"
+      ],
+      "soc": "43-3021",
+      "confidence": "low",
+      "bimodal": true
+    },
+    {
+      "label": "AR analyst",
+      "kw": [
+        "accounts receivable",
+        "ar analyst",
+        "a/r ",
+        "a/r analyst"
+      ],
+      "soc": "43-3021",
+      "confidence": "med",
+      "bimodal": true
+    },
+    {
+      "label": "credentialing specialist",
+      "kw": [
+        "credential"
+      ],
+      "soc": "13-1041",
+      "confidence": "low",
+      "bimodal": true
+    },
+    {
+      "label": "payer enrollment specialist",
+      "kw": [
+        "payer enrollment",
+        "provider enrollment",
+        "enrollment specialist"
+      ],
+      "soc": "13-1041",
+      "confidence": "low",
+      "bimodal": true
+    },
+    {
+      "label": "prior authorization specialist",
+      "kw": [
+        "prior auth",
+        "authorization",
+        "pre-authorization",
+        "pre-auth"
+      ],
+      "soc": "43-6013",
+      "confidence": "med",
+      "bimodal": true
+    },
+    {
+      "label": "medical coder",
+      "kw": [
+        "coder",
+        "coding",
+        "drg",
+        "hcc"
+      ],
+      "soc": "29-2072",
+      "confidence": "high",
+      "bimodal": false
+    },
+    {
+      "label": "cash/payment posting",
+      "kw": [
+        "cash posting",
+        "payment posting",
+        "cash application",
+        "payment poster"
+      ],
+      "soc": "43-3021",
+      "confidence": "high",
+      "bimodal": false
+    },
+    {
+      "label": "charge entry",
+      "kw": [
+        "charge entry",
+        "charge capture",
+        "charge review"
+      ],
+      "soc": "43-3021",
+      "confidence": "high",
+      "bimodal": false
+    },
+    {
+      "label": "collections specialist",
+      "kw": [
+        "collection"
+      ],
+      "soc": "43-3011",
+      "confidence": "high",
+      "bimodal": false
+    },
+    {
+      "label": "insurance verification / eligibility",
+      "kw": [
+        "insurance verification",
+        "eligibility",
+        "benefit verification"
+      ],
+      "soc": "43-4171",
+      "confidence": "med",
+      "bimodal": false
+    },
+    {
+      "label": "patient access",
+      "kw": [
+        "patient access",
+        "patient registration",
+        "patient service rep",
+        "patient account"
+      ],
+      "soc": "43-4171",
+      "confidence": "med",
+      "bimodal": false
+    },
+    {
+      "label": "medical billing / biller",
+      "kw": [
+        "medical billing",
+        "medical biller",
+        " biller",
+        "billing specialist",
+        "billing representative"
+      ],
+      "soc": "43-3021",
+      "confidence": "high",
+      "bimodal": false
+    },
+    {
+      "label": "claims",
+      "kw": [
+        "claims"
+      ],
+      "soc": "43-3021",
+      "confidence": "low",
+      "bimodal": true
+    }
+  ],
+  "note": "13-1041 (Compliance Officers) is the least-bad proxy for analyst-level RCM roles but its IQR is enormous ($29-$52); 43-3021 median ($23) sits near the bottom of the real analyst range. Bimodal SOCs flagged."
+}

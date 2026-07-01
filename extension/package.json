@@ -1,0 +1,19 @@
+{
+  "name": "untethered-extension",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "description": "Untethered V1 wedge — MV3 extension (WXT/Vite/TypeScript). Score-don't-store.",
+  "scripts": {
+    "dev": "wxt",
+    "build": "wxt build",
+    "compile": "tsc --noEmit",
+    "test": "vitest run",
+    "test:node": "node --test test/test_parsers.mjs test/test_parity.mjs test/test_pay_parity.mjs"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.8",
+    "wxt": "^0.19.13"
+  }
+}

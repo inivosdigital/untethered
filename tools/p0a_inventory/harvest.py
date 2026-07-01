@@ -6,10 +6,11 @@ Answers the #1 make-or-break question from docs/BUILD_ROADMAP.md: is there enoug
 FLOW (net-new per week), not just stock, of roles that survive ALL of these filters?
 
   Stage 1  RCM-title-relevant
-  Stage 2  genuinely fully-remote (not hybrid / state-restricted)
-  Stage 3  posted pay >= $30/hr
-  Stage 4  offshore-resistant (onshore RCM taxonomy)
-  Stage 5  credential-accessible (no hard RN / bachelor's gate)   -> QUALIFYING
+  Stage 2  accessible IC role-type (not leadership / eng / product / sales / clinical)
+  Stage 3  genuinely fully-remote (not hybrid / state-restricted)
+  Stage 4  posted pay >= $30/hr
+  Stage 5  offshore-resistant (onshore RCM taxonomy)
+  Stage 6  credential-accessible (no hard RN / bachelor's gate)   -> QUALIFYING
 
 Sources: FREE, no-auth ATS job-board APIs (Greenhouse, Lever, Ashby) + USAJOBS
 (free key, optional).
@@ -38,53 +39,26 @@ from datetime import date
 from html.parser import HTMLParser
 
 UA = "untethered-p0a-inventory/0.1 (research spike; contact: admin@inivosdigital.com)"
-HOURS_PER_YEAR = 2080
-HOURS_PER_DAY = 8
-FLOOR_HOURLY = 30.0
-
 # ----------------------------------------------------------------------------
-# Heuristic keyword lists — TUNE THESE. They are the whole ballgame; spot-check.
+# Scoring heuristics — the SINGLE source of truth is scoring/rules.json, shared
+# verbatim with the extension. Tune the rules THERE, not here; the parity tests
+# keep the Python and JS engines in lockstep so a page verdict and a feed verdict
+# can never disagree on the same posting.
 # ----------------------------------------------------------------------------
-DEFAULT_TITLE_KEYWORDS = [
-    "revenue cycle analyst", "revenue cycle", "denials analyst", "denial analyst",
-    "denials", "appeals analyst", "appeals", "accounts receivable analyst",
-    "ar analyst", "prior authorization", "patient access", "medical billing",
-    "payer enrollment", "credentialing", "reimbursement", "claims",
-]
-# Onshore = offshore-RESISTANT signals (complex, judgment, US-context, patient-facing)
-ONSHORE_SIGNALS = [
-    "denial", "denials", "appeal", "appeals", "underpayment",
-    "payer policy", "payer-policy", "dispute", "negotiat", "escalat",
-    "patient financial", "financial counsel", "patient-facing",
-    "clinical documentation", "cdi", "variance", "root cause", "grievance",
-]
-# Offshore-prone = commodity / transactional signals (racing offshore)
-OFFSHORE_SIGNALS = [
-    "charge entry", "payment posting", "post payments", "data entry",
-    "eligibility verification", "credentialing", "coding", "claim submission",
-    "indexing", "scanning", "keying", "transcription",
-]
-RN_GATE = re.compile(
-    r"\b(rn|registered nurse|bsn|nursing license|nurse licensure|"
-    r"active.{0,25}nurs|compact (rn|nurs|license))\b", re.I)
-DEGREE_GATE = re.compile(
-    r"(bachelor[’'s]*\s*(?:degree)?\s*(?:is\s*)?(?:required|require|mandatory)|"
-    r"requires?\s+a\s+bachelor|ba/bs\s+required|"
-    r"(?:must|need)\s+(?:have|possess)\s+a?\s*bachelor)", re.I)
-HYBRID_FLAGS = re.compile(
-    r"\b(hybrid|on-?site|in-?office|in person|days?\s+(?:per week\s+)?in (?:the )?office|"
-    r"must reside in|must live in|located in|relocat|commut)\b", re.I)
-REMOTE_FLAGS = re.compile(r"\b(fully remote|100% remote|remote|work from home|telework|wfh)\b", re.I)
-# Clear NON-remote phrasing: 'remote not available', 'non-remote', 'no/not remote'.
-NEG_REMOTE_FLAGS = re.compile(
-    r"\b(no|not) remote\b"
-    r"|\bnon-?remote\b"
-    r"|\bremote\b[^.]{0,25}\b(not (?:available|offered|eligible|permitted|an option)|unavailable)\b"
-    r"|\bnot eligible for remote\b", re.I)
-# Remote-AFFIRMING geo phrasing that should NOT trip the hybrid/geo flags.
-REMOTE_ANYWHERE_FLAGS = re.compile(
-    r"\b(fully remote|100% remote|work from anywhere|remote from anywhere|"
-    r"located in any|any (?:us )?state|anywhere in the (?:us|united states))\b", re.I)
+from scoring_rules import (  # noqa: E402
+    FLOOR_HOURLY, HOURS_PER_YEAR, HOURS_PER_DAY,
+    TITLE_KEYWORDS as DEFAULT_TITLE_KEYWORDS,
+    ONSHORE_SIGNALS, OFFSHORE_SIGNALS,
+    PAY_DISQUALIFIERS as _PAY_DISQUALIFIERS,
+    INTERVAL_CODES as _INTERVAL_CODES,
+    RN_GATE, DEGREE_GATE, HYBRID_FLAGS, REMOTE_FLAGS, NEG_REMOTE_FLAGS,
+    REMOTE_ANYWHERE_FLAGS, SENIORITY_EXCLUDE, FUNCTION_EXCLUDE,
+    LEADER_EXCLUDE, LEADER_KEEP, MONEY as _MONEY,
+    PAY_HOURLY as _PAY_HOURLY, PAY_RANGE as _PAY_RANGE,
+)
+from pay import posted_estimate, clears_floor  # noqa: E402  (F2 pay-truth engine)
+import store  # noqa: E402  (F3 SQLite persistence)
+import workday_harvest  # noqa: E402  (Phase-1.1 Workday CXS list harvester)
 
 
 # ----------------------------------------------------------------------------
@@ -123,53 +97,14 @@ def strip_html(raw):
 # ----------------------------------------------------------------------------
 # Pay parsing -> hourly
 # ----------------------------------------------------------------------------
-# Bare interval CODES that carry no English word (USAJOBS RateIntervalCode,
-# etc.) mapped to a word the substring logic below understands.
-_INTERVAL_CODES = {
-    "ph": "hour", "pa": "year", "py": "year", "pm": "month",
-    "pw": "week", "pd": "day", "bw": "biweek",
-}
+# _INTERVAL_CODES (USAJOBS RateIntervalCode -> interval word) imported from scoring_rules.
 
 
-def to_hourly(amount, interval_hint=""):
-    """Normalize a numeric amount to an hourly figure using an interval hint or magnitude.
-
-    Recognizes hourly/annual/monthly/weekly/biweekly/daily intervals, expressed
-    either as English words (Lever 'per-month-salary') or as bare codes
-    (USAJOBS 'PM'/'PW'/'PD'/'BW'). Falls back to a magnitude guess only for
-    genuinely unknown hints.
-    """
-    if amount is None:
-        return None
-    hint = (interval_hint or "").lower().strip()
-    hint = _INTERVAL_CODES.get(hint, hint)
-    if any(k in hint for k in ("hour", "hr", "/h")):
-        return amount
-    if any(k in hint for k in ("year", "annual", "annum", "yr", "/y")):
-        return amount / HOURS_PER_YEAR
-    if "biweek" in hint or "bi-week" in hint or "bi week" in hint:
-        return amount * 26 / HOURS_PER_YEAR
-    if "month" in hint or "/mo" in hint or "mth" in hint:
-        return amount * 12 / HOURS_PER_YEAR
-    if "week" in hint or "wk" in hint:
-        return amount * 52 / HOURS_PER_YEAR
-    if "day" in hint or "daily" in hint or "diem" in hint:
-        return amount / HOURS_PER_DAY
-    # genuinely unknown interval: fall back to magnitude
-    return amount if amount < 1000 else amount / HOURS_PER_YEAR
+# to_hourly is shared via scoring_rules (used by both the harvester and the pay engine).
+from scoring_rules import to_hourly  # noqa: E402,F401
 
 
-_MONEY = re.compile(r"\$\s*([0-9]{2,3}(?:,[0-9]{3})*(?:\.[0-9]+)?)")
-# Context words that mark a nearby $ figure as NOT salary. A bonus, tuition
-# benefit, or "we saved clients $X" claim is not pay — counting it as such
-# inflates the funnel (a $500k savings figure would clear the $30/hr floor).
-_PAY_DISQUALIFIERS = (
-    "bonus", "sign-on", "sign on", "signing", "reimburs", "tuition",
-    "relocat", "saved", "saving", "revenue", "portfolio", "aum",
-    "401", "stipend", "budget", "raised", "funding", "valuation",
-    "valued", "scholarship", "award", "prize", "grant", "equity",
-    "stock", "discount", "deductible", "premium", "penalty",
-)
+# _MONEY and _PAY_DISQUALIFIERS imported from scoring_rules (canonical rules.json).
 
 
 def parse_pay_from_text(text):
@@ -178,14 +113,27 @@ def parse_pay_from_text(text):
         return None, None
     window = text
     # prefer an explicit hourly mention
-    m = re.search(r"\$\s*([0-9]{2,3}(?:\.[0-9]+)?)\s*(?:-|to|–)?\s*\$?\s*([0-9]{2,3}(?:\.[0-9]+)?)?\s*(?:/|per\s+)?\s*(hour|hr|hourly)", window, re.I)
+    m = _PAY_HOURLY.search(window)
     if m:
         lo = float(m.group(1))
         hi = float(m.group(2)) if m.group(2) else lo
-        return max(lo, hi), m.group(0)
+        return min(lo, hi), m.group(0)   # floor = LOWER bound of the posted range
+    low = window.lower()
+    # an explicit numeric range ("$45,000 - $70,000", "$22 to $34") -> use the LOWER
+    # bound, so a range that STRADDLES $30 never reports its top as the floor.
+    rng = _PAY_RANGE.search(window)
+    if rng:
+        ctx = low[max(0, rng.start() - 28): rng.end() + 28]
+        if not any(bad in ctx for bad in _PAY_DISQUALIFIERS):
+            a = float(rng.group(1).replace(",", "")); b = float(rng.group(2).replace(",", ""))
+            lo2 = min(a, b)
+            # ratio guard: a real pay range's endpoints are within ~25x; a wider gap
+            # is a parse artifact (e.g. the "$120.000" European-decimal typo) -> skip.
+            if lo2 >= 10 and max(a, b) / lo2 <= 25:
+                interval = "year" if lo2 > 1500 else "hour"
+                return to_hourly(lo2, interval), f"${lo2:,.0f}-range ({interval})"
     # fall back to the largest plausible salary figure, skipping any $ amount
     # whose nearby context marks it as non-salary (bonus/savings/tuition/...).
-    low = window.lower()
     nums = []
     for mm in _MONEY.finditer(window):
         ctx = low[max(0, mm.start() - 28): mm.end() + 28]
@@ -205,23 +153,22 @@ def parse_pay_from_text(text):
 # Normalized posting
 # ----------------------------------------------------------------------------
 def posting(source, source_id, employer, title, location, workplace, description,
-            pay_min=None, pay_max=None, pay_interval="", url="", posted_at=""):
+            pay_min=None, pay_max=None, pay_interval="", pay_currency="USD", url="", posted_at=""):
     desc = strip_html(description)
-    pay_hourly, pay_src = None, ""
-    if pay_max is not None or pay_min is not None:
-        amt = _to_float(pay_max if pay_max is not None else pay_min)
-        if amt is not None:
-            pay_hourly = to_hourly(amt, pay_interval)
-            pay_src = "structured"
-    if pay_hourly is None:
-        pay_hourly, raw = parse_pay_from_text(f"{title} {desc}")
-        if pay_hourly is not None:
-            pay_src = "text:" + (raw or "")
+    structured = None
+    if pay_min is not None or pay_max is not None:
+        structured = {"min": pay_min, "max": pay_max, "currency": pay_currency, "interval": pay_interval}
+    est = posted_estimate(structured=structured, text=f"{title or ''} {desc}")
     return {
         "source": source, "source_id": str(source_id), "employer": employer,
         "title": title or "", "location": location or "", "workplace": workplace or "",
-        "description": desc, "pay_hourly": round(pay_hourly, 2) if pay_hourly else None,
-        "pay_source": pay_src, "url": url, "posted_at": posted_at,
+        "description": desc,
+        # pay_hourly is the FLOOR (lower bound); pay_ceiling the upper bound. A range that
+        # crosses $30 is pay_clears_floor="straddles", never a false ge30 (F2 pay-truth).
+        "pay_hourly": est["floorHourly"], "pay_ceiling": est["ceilingHourly"],
+        "pay_source": est["source"] if est["source"] == "none" else f"{est['source']}:{est['confidence']}",
+        "pay_clears_floor": est["clearsFloor"], "pay_straddles": est["straddlesFloor"],
+        "url": url, "posted_at": posted_at,
     }
 
 
@@ -369,9 +316,54 @@ def _to_float(v):
 # ----------------------------------------------------------------------------
 # Filters
 # ----------------------------------------------------------------------------
+# Workday full-text queries (RCM archetype). The CXS detail endpoint is browser-only, so
+# Workday roles come out with pay UNKNOWN — they lift coverage + the upper bound; the
+# EXTENSION supplies pay-truth in the page context (the "extension is load-bearing" design).
+WORKDAY_SEARCH_TERMS = [
+    "revenue cycle", "denials", "appeals", "accounts receivable", "medical billing",
+    "credentialing", "prior authorization", "patient access", "medical coding",
+    "collections", "reimbursement", "claims",
+]
+
+
+def fetch_workday(entry):
+    """entry = {employer, tenant, pod, site}. Normalized postings (pay unknown). Never raises."""
+    out = []
+    try:
+        jobs = workday_harvest.list_jobs(entry["tenant"], entry["pod"], entry["site"],
+                                         WORKDAY_SEARCH_TERMS, max_pages=4)
+    except Exception as e:
+        print(f"  [workday:{entry.get('tenant')}] skip ({e})", file=sys.stderr)
+        return out
+    for j in jobs:
+        loc = j["location"]
+        out.append(posting(
+            "workday", j["source_id"], entry.get("employer") or entry["tenant"],
+            j["title"], loc, "remote" if "remote" in loc.lower() else "", "",
+            url=j["url"], posted_at=j["posted_at"]))
+    return out
+
+
 def f_rcm(p, title_keywords):
     hay = f"{p['title']} {p['description'][:400]}".lower()
     return any(k in hay for k in title_keywords)
+
+
+def f_role_archetype(p):
+    """True when the TITLE reads as an accessible individual-contributor RCM role.
+
+    Rejects leadership (VP/Director/Manager/Chief/Principal), wrong-function
+    (eng/product/design/sales/marketing/legal/HR/procurement/CS/pre-sales/medical-
+    affairs), and clinically-credentialed titles (physician/pharmacist/NP/therapist)
+    that only *mention* revenue-cycle work. Title-only by design — the body often
+    references other roles the posting is not itself for.
+    """
+    title = p["title"] or ""
+    if SENIORITY_EXCLUDE.search(title) or FUNCTION_EXCLUDE.search(title):
+        return False
+    if LEADER_EXCLUDE.search(title) and not LEADER_KEEP.search(title):
+        return False  # "RCM Leader" out; "Team Leader"/"Program Leader" kept
+    return True
 
 
 def f_remote(p):
@@ -393,10 +385,9 @@ def f_remote(p):
 
 
 def f_pay(p):
-    h = p["pay_hourly"]
-    if h is None:
-        return "unknown"
-    return "ge30" if h >= FLOOR_HOURLY else "lt30"
+    # straddle-aware: a posted range crossing $30 is "straddles", not a false "ge30".
+    return {"yes": "ge30", "no": "lt30", "straddles": "straddles", "unknown": "unknown"}[
+        clears_floor(p.get("pay_hourly"), p.get("pay_ceiling"))]
 
 
 def _signal_hits(text, signals):
@@ -424,16 +415,20 @@ def f_credential(p):
 
 def classify(p, title_keywords):
     p["_rcm"] = f_rcm(p, title_keywords)
+    p["_role_archetype"] = f_role_archetype(p)
     p["_remote"] = f_remote(p)
     p["_pay"] = f_pay(p)
     resistant, on, off = f_offshore_resistant(p)
     p["_offshore_resistant"], p["_onshore_score"], p["_offshore_score"] = resistant, on, off
     p["_credential"] = f_credential(p)
     p["_qualifies_strict"] = bool(
-        p["_rcm"] and p["_remote"] == "remote" and p["_pay"] == "ge30"
+        p["_rcm"] and p["_role_archetype"] and p["_remote"] == "remote" and p["_pay"] == "ge30"
         and p["_offshore_resistant"] and p["_credential"] == "accessible")
+    # upper bound: also count roles whose posted range STRADDLES $30 (might clear the
+    # floor) or whose pay is unknown — they don't strictly qualify but belong in the ceiling.
     p["_qualifies_if_pay_unknown"] = bool(
-        p["_rcm"] and p["_remote"] == "remote" and p["_pay"] in ("ge30", "unknown")
+        p["_rcm"] and p["_role_archetype"] and p["_remote"] == "remote"
+        and p["_pay"] in ("ge30", "unknown", "straddles")
         and p["_offshore_resistant"] and p["_credential"] == "accessible")
     return p
 
@@ -501,8 +496,9 @@ def main():
     today = date.today().isoformat()
     run_dir = os.path.join(args.out_dir, "runs", today)
     os.makedirs(run_dir, exist_ok=True)
-    state_path = os.path.join(args.out_dir, "state", "seen.json")
-    state = load_state(state_path)
+    conn = store.connect(store.default_db_path())   # local disk (out_dir is CIFS)
+    store.migrate_seen_json(conn, os.path.join(args.out_dir, "state", "seen.json"))
+    state = store.load_flow_state(conn)
 
     print(f"== P0-A harvest {today} ==")
     postings = []
@@ -512,6 +508,8 @@ def main():
         postings += fetch_lever(c)
     for b in cfg.get("ashby_boards", []):
         postings += fetch_ashby(b)
+    for entry in cfg.get("workday_tenants", []):
+        postings += fetch_workday(entry)
     uj = cfg.get("usajobs", {})
     if uj.get("enabled"):
         postings += fetch_usajobs(uj.get("keywords", []), os.environ.get("USAJOBS_API_KEY"),
@@ -529,16 +527,22 @@ def main():
     # funnel (strict path)
     n_total = len(deduped)
     s_rcm = [p for p in deduped if p["_rcm"]]
-    s_remote = [p for p in s_rcm if p["_remote"] == "remote"]
+    s_role = [p for p in s_rcm if p["_role_archetype"]]
+    s_remote = [p for p in s_role if p["_remote"] == "remote"]
     s_pay = [p for p in s_remote if p["_pay"] == "ge30"]
     s_offshore = [p for p in s_pay if p["_offshore_resistant"]]
     s_qual = [p for p in s_offshore if p["_credential"] == "accessible"]
+    # archetype-IC remote + offshore-resistant + accessible roles whose posted range
+    # STRADDLES $30 (floor below, ceiling above) — would qualify if the floor cleared.
+    # Surfaced separately, NOT counted as strict qualifiers (F2 pay-truth).
+    s_straddle = [p for p in s_remote if p["_pay"] == "straddles"
+                  and p["_offshore_resistant"] and p["_credential"] == "accessible"]
     upper = [p for p in deduped if p["_qualifies_if_pay_unknown"]]
 
     # net-new flow vs prior runs (counts the first run a posting QUALIFIES, even
     # if it was seen earlier while non-qualifying); records first-seen for all.
     new_qual = update_flow_state(deduped, s_qual, state, today)
-    save_state(state_path, state)
+    store.save_flow_state(conn, deduped, state, today)
 
     def pct(n):
         return f"{(100.0*n/n_total):.1f}%" if n_total else "n/a"
@@ -549,17 +553,20 @@ def main():
             "greenhouse": cfg.get("greenhouse_boards", []),
             "lever": cfg.get("lever_companies", []),
             "ashby": cfg.get("ashby_boards", []),
+            "workday": [e.get("tenant") for e in cfg.get("workday_tenants", [])],
             "usajobs_enabled": bool(uj.get("enabled")),
         },
         "funnel": {
             "0_total_fetched": n_total,
             "1_rcm_relevant": len(s_rcm),
-            "2_fully_remote": len(s_remote),
-            "3_pay_ge_30": len(s_pay),
-            "4_offshore_resistant": len(s_offshore),
-            "5_qualifying_strict": len(s_qual),
+            "2_ic_archetype": len(s_role),
+            "3_fully_remote": len(s_remote),
+            "4_pay_ge_30": len(s_pay),
+            "5_offshore_resistant": len(s_offshore),
+            "6_qualifying_strict": len(s_qual),
         },
         "pay_unknown_upper_bound_qualifying": len(upper),
+        "straddles_30_qualifying": len(s_straddle),
         "net_new_qualifying_this_run": len(new_qual),
         "pay_coverage": {
             "postings_with_posted_pay": sum(1 for p in deduped if p["_pay"] != "unknown"),
@@ -574,16 +581,20 @@ def main():
     _write_csv(os.path.join(run_dir, "qualifying.csv"), s_qual)
     with open(os.path.join(run_dir, "summary.json"), "w") as f:
         json.dump(summary, f, indent=2)
+    store.record_run(conn, summary)   # queryable run history (F3)
+    conn.close()
 
     # print
     print(f"\nSURVIVAL FUNNEL (strict, free-feed lower bound):")
     print(f"  0. fetched ................. {n_total}")
     print(f"  1. RCM-relevant ............ {len(s_rcm):>5}  ({pct(len(s_rcm))})")
-    print(f"  2. + fully-remote .......... {len(s_remote):>5}  ({pct(len(s_remote))})")
-    print(f"  3. + pay >= $30/hr ......... {len(s_pay):>5}  ({pct(len(s_pay))})")
-    print(f"  4. + offshore-resistant .... {len(s_offshore):>5}  ({pct(len(s_offshore))})")
-    print(f"  5. = QUALIFYING ............ {len(s_qual):>5}  ({pct(len(s_qual))})")
-    print(f"\n  upper bound (incl. pay-unknown): {len(upper)}")
+    print(f"  2. + IC-archetype role ..... {len(s_role):>5}  ({pct(len(s_role))})")
+    print(f"  3. + fully-remote .......... {len(s_remote):>5}  ({pct(len(s_remote))})")
+    print(f"  4. + pay >= $30/hr ......... {len(s_pay):>5}  ({pct(len(s_pay))})")
+    print(f"  5. + offshore-resistant .... {len(s_offshore):>5}  ({pct(len(s_offshore))})")
+    print(f"  6. = QUALIFYING ............ {len(s_qual):>5}  ({pct(len(s_qual))})")
+    print(f"\n  straddles $30 (might clear) ...: {len(s_straddle)}")
+    print(f"  upper bound (incl. pay-unknown): {len(upper)}")
     print(f"  net-new qualifying this run ...: {len(new_qual)}")
     print(f"  pay coverage ..................: "
           f"{summary['pay_coverage']['postings_with_posted_pay']}/{n_total} have posted pay")
@@ -595,9 +606,10 @@ def main():
 
 
 def _write_csv(path, rows):
-    cols = ["source", "employer", "title", "location", "workplace", "pay_hourly",
-            "pay_source", "_remote", "_pay", "_offshore_resistant", "_onshore_score",
-            "_offshore_score", "_credential", "_qualifies_strict", "url", "posted_at"]
+    cols = ["source", "employer", "title", "location", "workplace", "pay_hourly", "pay_ceiling",
+            "pay_source", "pay_clears_floor", "_role_archetype", "_remote", "_pay",
+            "_offshore_resistant", "_onshore_score", "_offshore_score", "_credential",
+            "_qualifies_strict", "url", "posted_at"]
     with open(path, "w", newline="") as f:
         w = csv.writer(f)
         w.writerow(cols)

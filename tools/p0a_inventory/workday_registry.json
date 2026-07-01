@@ -1,0 +1,185 @@
+{
+  "_comment": "Verified Workday careers tenants (tenant.pod.myworkdayjobs.com/en-US/site) of US health employers with remote RCM roles. Discovered + CXS-verified 2026-07-01. Big RCM employers NOT on Workday (on iCIMS/Oracle/Paylocity/Taleo): Conifer, Med-Metrix, Aspirion, GeBBS, Access Healthcare, Cotiviti, Molina, Optum/UHG, Kaiser.",
+  "tenants": [
+    {
+      "employer": "Ensemble Health Partners",
+      "tenant": "ensemblehp",
+      "pod": "wd5",
+      "site": "EnsembleHealthPartnersCareers"
+    },
+    {
+      "employer": "R1 RCM",
+      "tenant": "r1rcm",
+      "pod": "wd1",
+      "site": "R1RCM"
+    },
+    {
+      "employer": "Savista",
+      "tenant": "savista",
+      "pod": "wd1",
+      "site": "Savista"
+    },
+    {
+      "employer": "CorroHealth",
+      "tenant": "corrohealth",
+      "pod": "wd1",
+      "site": "Corro"
+    },
+    {
+      "employer": "Sagility",
+      "tenant": "sagility",
+      "pod": "wd1",
+      "site": "SagilityUSA"
+    },
+    {
+      "employer": "Centene",
+      "tenant": "centene",
+      "pod": "wd5",
+      "site": "Centene_External"
+    },
+    {
+      "employer": "Elevance Health",
+      "tenant": "elevancehealth",
+      "pod": "wd1",
+      "site": "ANT"
+    },
+    {
+      "employer": "CVS Health / Aetna",
+      "tenant": "cvshealth",
+      "pod": "wd1",
+      "site": "CVS_Health_Careers"
+    },
+    {
+      "employer": "Humana",
+      "tenant": "humana",
+      "pod": "wd5",
+      "site": "Humana_External_Career_Site"
+    },
+    {
+      "employer": "Cigna / Evernorth",
+      "tenant": "cigna",
+      "pod": "wd5",
+      "site": "cignacareers"
+    },
+    {
+      "employer": "Highmark Health",
+      "tenant": "highmarkhealth",
+      "pod": "wd1",
+      "site": "highmark"
+    },
+    {
+      "employer": "Guidehouse",
+      "tenant": "guidehouse",
+      "pod": "wd1",
+      "site": "External"
+    },
+    {
+      "employer": "Trinity Health",
+      "tenant": "trinityhealth",
+      "pod": "wd1",
+      "site": "Jobs"
+    },
+    {
+      "employer": "Banner Health",
+      "tenant": "bannerhealth",
+      "pod": "wd108",
+      "site": "Careers"
+    },
+    {
+      "employer": "Intermountain Health",
+      "tenant": "imh",
+      "pod": "wd108",
+      "site": "IntermountainCareers"
+    },
+    {
+      "employer": "Sutter Health",
+      "tenant": "sutterhealth",
+      "pod": "wd1",
+      "site": "SH"
+    },
+    {
+      "employer": "Ochsner Health",
+      "tenant": "ochsner",
+      "pod": "wd1",
+      "site": "Ochsner"
+    },
+    {
+      "employer": "Labcorp",
+      "tenant": "labcorp",
+      "pod": "wd1",
+      "site": "External"
+    },
+    {
+      "employer": "DaVita",
+      "tenant": "davita",
+      "pod": "wd1",
+      "site": "DKC_External"
+    },
+    {
+      "employer": "Cardinal Health",
+      "tenant": "cardinalhealth",
+      "pod": "wd1",
+      "site": "EXT"
+    },
+    {
+      "employer": "McKesson",
+      "tenant": "mckesson",
+      "pod": "wd3",
+      "site": "External_Careers"
+    },
+    {
+      "employer": "Option Care Health",
+      "tenant": "optioncare",
+      "pod": "wd1",
+      "site": "OptionCare"
+    },
+    {
+      "employer": "ModivCare",
+      "tenant": "modivcare",
+      "pod": "wd1",
+      "site": "careers"
+    },
+    {
+      "employer": "agilon health",
+      "tenant": "agilonhealth",
+      "pod": "wd1",
+      "site": "External"
+    },
+    {
+      "employer": "Cano Health",
+      "tenant": "canohealth",
+      "pod": "wd5",
+      "site": "Careers"
+    },
+    {
+      "employer": "NextGen Healthcare",
+      "tenant": "nextgen",
+      "pod": "wd5",
+      "site": "NextGen_Careers"
+    },
+    {
+      "employer": "Waystar",
+      "tenant": "waystar",
+      "pod": "wd1",
+      "site": "Waystar"
+    },
+    {
+      "employer": "Availity",
+      "tenant": "availity",
+      "pod": "wd1",
+      "site": "Availity_Careers_US"
+    },
+    {
+      "employer": "Devoted Health",
+      "tenant": "devoted",
+      "pod": "wd1",
+      "site": "Devoted"
+    },
+    {
+      "employer": "Teladoc Health",
+      "tenant": "teladoc",
+      "pod": "wd503",
+      "site": "teladochealth_is_hiring"
+    }
+  ]
+}
