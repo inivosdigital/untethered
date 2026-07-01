@@ -14,7 +14,7 @@ import argparse
 import json
 import sys
 
-from reframe import diff
+from reframe import diff, ingest
 from reframe.engine import MODES, reframe
 from reframe.schema import ReframeProposal
 
@@ -33,7 +33,7 @@ def _canned_proposer(path):
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description="Ground-guarded resume re-frame.")
-    ap.add_argument("--resume", required=True, help="Resume text file, or '-' for stdin.")
+    ap.add_argument("--resume", required=True, help="Resume file (.txt/.pdf/.docx) or '-' for stdin.")
     ap.add_argument("--mode", default="full_reframe", choices=MODES)
     ap.add_argument("--target-title", default=None, help="Candidate's target title (hint).")
     ap.add_argument("--proposals", default=None, help="Canned proposals JSON (offline).")
@@ -41,7 +41,11 @@ def main(argv=None):
     ap.add_argument("--json", action="store_true", help="Emit the result as JSON.")
     args = ap.parse_args(argv)
 
-    resume = _read(args.resume)
+    try:
+        resume = ingest.load_resume(args.resume)  # cleans text; handles pdf/docx/stdin
+    except ingest.IngestError as exc:
+        print(f"reframe failed: {exc}", file=sys.stderr)
+        return 1
     proposer = _canned_proposer(args.proposals) if args.proposals else None
 
     try:

@@ -21,6 +21,16 @@ The guard never rewrites text.
 It only accepts or rejects, with a stable reason for every rejection, so the user can see exactly what was dropped and why.
 Because the guard, taxonomy, schema, engine, and diff import with no SDK dependency, the trust core is fully unit-tested with no API key and no network.
 
+## Ingestion and field-scoped application
+
+[`ingest.py`](ingest.py) loads a resume from `.txt`/`.pdf`/`.docx`/stdin into one clean canonical string (newlines normalized, BOM/zero-width/non-breaking spaces folded) that every offset and the grounding guard index identically.
+PDF/DOCX libraries are imported lazily, so the package and all tests run with no extra dependencies.
+
+[`segment.py`](segment.py) turns that string into a `ResumeDoc`: a byte-exact, gap-free partition into typed segments (headline, summary, experience, bullet, skills, ...), each carrying exact raw character offsets and a `splice_safe` flag.
+It is heading-anchored when it finds section headers, falls back to a layout heuristic otherwise, and abstains to a single whole-doc region rather than ever mis-assigning text; the partition invariants are hard-asserted at construction.
+With a `ResumeDoc`, [`engine.py`](engine.py) `apply_edits` writes each accepted edit into its field's exact window (splices applied back-to-front so multi-edit offsets stay valid), and falls back to the whole-resume replace for anything that does not resolve to a splice-safe window.
+This fixes two latent bugs (a global replace splicing the wrong region when the `before` text recurs, and forward-splice offset drift) while leaving the grounding guard untouched: it still validates every edit against the whole resume, and segmentation only chooses *where* an already-accepted edit lands.
+
 ## Modes (aligned to the P0-E callback A/B arms)
 
 - `control` - resume unchanged (the A/B baseline; never calls the model, so it costs nothing).

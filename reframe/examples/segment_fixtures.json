@@ -1,0 +1,201 @@
+[
+ {
+  "label": "no_headers_at_all",
+  "resume_text": "Maria Delgado\nmaria.delgado@email.com | (312) 555-0148 | Chicago, IL\n\nCertified medical biller with 9 years reducing denial rates and accelerating cash collections for multi-specialty groups. Known for owning the full AR lifecycle end to end.\n\nSenior AR Specialist, Northside Health Partners (2019-Present)\nWorked aged AR over 90 days down from 22% to 9% across three clinics.\nSubmitted and tracked corrected claims and appeals to commercial and Medicare payers.\n\nBilling Coordinator, LakeView Medical Group (2015-2019)\nPosted payments and reconciled EOBs against remittance advice daily.\nManaged clearinghouse rejections and resubmitted within 24 hours.\n\nEpic Resolute, denial management, appeals writing, EOB reconciliation, CPT/ICD-10.",
+  "expected": {
+   "headline": "Maria Delgado",
+   "summary": "Certified medical biller with 9 years reducing denial rates and accelerating cash collections for multi-specialty groups. Known for owning the full AR lifecycle end to end.",
+   "experience_bullets": [
+    "Worked aged AR over 90 days down from 22% to 9% across three clinics.",
+    "Submitted and tracked corrected claims and appeals to commercial and Medicare payers.",
+    "Posted payments and reconciled EOBs against remittance advice daily.",
+    "Managed clearinghouse rejections and resubmitted within 24 hours."
+   ],
+   "skills": [
+    "Epic Resolute",
+    "denial management",
+    "appeals writing",
+    "EOB reconciliation",
+    "CPT/ICD-10"
+   ]
+  }
+ },
+ {
+  "label": "unconventional_headers_what_i_do_career",
+  "resume_text": "JAMES OKAFOR \u2014 Denials & Appeals Analyst\njokafor@email.com  \u2022  Atlanta, GA\n\nWhat I Do\nI turn payer denials into recovered revenue, writing clinical and technical appeals that overturn CO-45, CO-97, and medical-necessity denials at scale.\n\nCareer\nDenials Analyst, Peachtree Regional (2020-Present)\n- Overturned $3.1M in denied claims through structured second-level appeals.\n- Built a denial-reason taxonomy that cut repeat denials by 34%.\nAppeals Coordinator, Grady Billing Office (2017-2020)\n- Drafted 60+ appeal letters weekly with a 71% overturn rate.\n\nToolbox\nWaystar \u00b7 Availity \u00b7 CARC/RARC codes \u00b7 medical necessity appeals \u00b7 root-cause analysis",
+  "expected": {
+   "headline": "JAMES OKAFOR \u2014 Denials & Appeals Analyst",
+   "summary": "I turn payer denials into recovered revenue, writing clinical and technical appeals that overturn CO-45, CO-97, and medical-necessity denials at scale.",
+   "experience_bullets": [
+    "Overturned $3.1M in denied claims through structured second-level appeals.",
+    "Built a denial-reason taxonomy that cut repeat denials by 34%.",
+    "Drafted 60+ appeal letters weekly with a 71% overturn rate."
+   ],
+   "skills": [
+    "Waystar",
+    "Availity",
+    "CARC/RARC codes",
+    "medical necessity appeals",
+    "root-cause analysis"
+   ]
+  }
+ },
+ {
+  "label": "headline_embedded_in_contact_block",
+  "resume_text": "Priya Nair\nCertified Professional Coder (CPC) | Risk Adjustment Coder\n847-555-0193 \u00b7 priya.nair@email.com \u00b7 Naperville, IL \u00b7 linkedin.com/in/priyanair\n\nPROFESSIONAL SUMMARY\nHCC and outpatient coder with 7 years auditing charts for coding accuracy and compliance, consistently exceeding 96% audit pass rates.\n\nEXPERIENCE\nRisk Adjustment Coder \u2014 Meridian Health Plan (2018-Present)\n* Coded 150+ charts daily against HCC/RAF methodology with 97.4% accuracy.\n* Identified undocumented chronic conditions, improving RAF capture 0.18 PMPM.\nOutpatient Coder \u2014 Suburban Surgical (2016-2018)\n* Assigned CPT and ICD-10-CM codes for same-day surgery encounters.\n\nSKILLS\nHCC coding, RAF scoring, ICD-10-CM, CPT, chart auditing, compliance",
+  "expected": {
+   "headline": "Certified Professional Coder (CPC) | Risk Adjustment Coder",
+   "summary": "HCC and outpatient coder with 7 years auditing charts for coding accuracy and compliance, consistently exceeding 96% audit pass rates.",
+   "experience_bullets": [
+    "Coded 150+ charts daily against HCC/RAF methodology with 97.4% accuracy.",
+    "Identified undocumented chronic conditions, improving RAF capture 0.18 PMPM.",
+    "Assigned CPT and ICD-10-CM codes for same-day surgery encounters."
+   ],
+   "skills": [
+    "HCC coding",
+    "RAF scoring",
+    "ICD-10-CM",
+    "CPT",
+    "chart auditing",
+    "compliance"
+   ]
+  }
+ },
+ {
+  "label": "colon_suffixed_headers_pipe_skills",
+  "resume_text": "DERRICK HALE\nRevenue Cycle Manager\ndhale@email.com | Dallas, TX\n\nSummary:\nRevenue cycle leader managing 18-person billing teams across front-end registration through back-end collections, cutting days in AR from 52 to 38.\n\nExperience:\nRevenue Cycle Manager, Lone Star Health System (2019-Present)\n- Reduced days in AR by 27% via workflow redesign and payer scorecards.\n- Renegotiated three clearinghouse contracts, saving $140K annually.\nBilling Supervisor, Trinity Medical (2014-2019)\n- Supervised charge entry, claim submission, and payment posting for 9 FTEs.\n\nSkills:\nEpic | Cerner | KPI reporting | payer contracting | team leadership | AR management",
+  "expected": {
+   "headline": "Revenue Cycle Manager",
+   "summary": "Revenue cycle leader managing 18-person billing teams across front-end registration through back-end collections, cutting days in AR from 52 to 38.",
+   "experience_bullets": [
+    "Reduced days in AR by 27% via workflow redesign and payer scorecards.",
+    "Renegotiated three clearinghouse contracts, saving $140K annually.",
+    "Supervised charge entry, claim submission, and payment posting for 9 FTEs."
+   ],
+   "skills": [
+    "Epic",
+    "Cerner",
+    "KPI reporting",
+    "payer contracting",
+    "team leadership",
+    "AR management"
+   ]
+  }
+ },
+ {
+  "label": "two_column_flattened_interleaved",
+  "resume_text": "ANGELA ROSS                              CONTACT\nCredentialing Specialist                 angela.ross@email.com\n                                         (602) 555-0170 | Phoenix, AZ\n\nPROFILE                                  CORE SKILLS\nCredentialing pro with 6 years           CAQH | PECOS | NPPES\nmanaging provider enrollment and         payer enrollment | primary\nre-credentialing for 200+ providers      source verification | Medicare\nacross Medicare, Medicaid, and           revalidation\ncommercial payers.\n\nEXPERIENCE\nCredentialing Specialist, Desert Care Network (2019-Present)\nEnrolled 200+ providers across 40 payers, cutting turnaround from 90 to 55 days.\nMaintained CAQH profiles and led quarterly re-credentialing cycles.",
+  "expected": {
+   "headline": "Credentialing Specialist",
+   "summary": "Credentialing pro with 6 years managing provider enrollment and re-credentialing for 200+ providers across Medicare, Medicaid, and commercial payers.",
+   "experience_bullets": [
+    "Enrolled 200+ providers across 40 payers, cutting turnaround from 90 to 55 days.",
+    "Maintained CAQH profiles and led quarterly re-credentialing cycles."
+   ],
+   "skills": [
+    "CAQH",
+    "PECOS",
+    "NPPES",
+    "payer enrollment",
+    "primary source verification",
+    "Medicare revalidation"
+   ]
+  }
+ },
+ {
+  "label": "summary_no_heading_allcaps_headers",
+  "resume_text": "TANYA WILLIAMS\nInsurance Follow-Up Representative\ntwilliams@email.com | Memphis, TN\n\nDedicated insurance follow-up rep with 5 years chasing unpaid and underpaid claims across commercial and government payers, recovering aged balances others wrote off.\n\nWORK HISTORY\nInsurance Follow-Up Rep, Baptist Memorial (2020-Present)\n- Recovered $890K in aged claims through payer calls and portal appeals.\n- Resolved 45+ claims daily via Availity and Navinet portals.\nAR Follow-Up Clerk, Regional One (2018-2020)\n- Worked denial worklists and initiated timely-filing appeals.\n\nTECHNICAL SKILLS\nAvaility, Navinet, Epic, timely-filing appeals, underpayment recovery, payer portals",
+  "expected": {
+   "headline": "Insurance Follow-Up Representative",
+   "summary": "Dedicated insurance follow-up rep with 5 years chasing unpaid and underpaid claims across commercial and government payers, recovering aged balances others wrote off.",
+   "experience_bullets": [
+    "Recovered $890K in aged claims through payer calls and portal appeals.",
+    "Resolved 45+ claims daily via Availity and Navinet portals.",
+    "Worked denial worklists and initiated timely-filing appeals."
+   ],
+   "skills": [
+    "Availity",
+    "Navinet",
+    "Epic",
+    "timely-filing appeals",
+    "underpayment recovery",
+    "payer portals"
+   ]
+  }
+ },
+ {
+  "label": "unicode_dot_bullets_comma_skills",
+  "resume_text": "Robert Chen\nCharge Capture Analyst \u00b7 rchen@email.com \u00b7 Seattle, WA\n\nAbout\nCharge capture analyst focused on closing revenue leakage between clinical documentation and billing, recovering missed charges across surgical and imaging service lines.\n\nExperience\nCharge Capture Analyst, Cascade Medical Center (2019-Present)\n\u2022 Recovered $1.4M in missed charges through daily charge reconciliation.\n\u2022 Audited late charges and lag reports across 6 departments.\nBilling Analyst, Puget Health (2016-2019)\n\u2022 Reconciled charge master (CDM) updates against payer fee schedules.\n\nSkills\ncharge reconciliation, CDM maintenance, revenue integrity, Epic, charge lag analysis, Excel",
+  "expected": {
+   "headline": "Charge Capture Analyst",
+   "summary": "Charge capture analyst focused on closing revenue leakage between clinical documentation and billing, recovering missed charges across surgical and imaging service lines.",
+   "experience_bullets": [
+    "Recovered $1.4M in missed charges through daily charge reconciliation.",
+    "Audited late charges and lag reports across 6 departments.",
+    "Reconciled charge master (CDM) updates against payer fee schedules."
+   ],
+   "skills": [
+    "charge reconciliation",
+    "CDM maintenance",
+    "revenue integrity",
+    "Epic",
+    "charge lag analysis",
+    "Excel"
+   ]
+  }
+ },
+ {
+  "label": "education_only_tail_asterisk_bullets",
+  "resume_text": "SOPHIA MARTINEZ\nMedical Billing Specialist | sophia.m@email.com | San Antonio, TX\n\nSUMMARY\nEntry-level medical billing specialist trained in claim submission, payment posting, and denial follow-up for physician practices.\n\nEXPERIENCE\nBilling Specialist, Alamo Family Practice (2022-Present)\n* Submitted clean claims via clearinghouse with a 94% first-pass rate.\n* Posted insurance and patient payments to practice management system.\n\nEDUCATION\nAssociate of Applied Science, Medical Billing & Coding\nSan Antonio College, 2022\nCertified Professional Biller (CPB), AAPC, 2022",
+  "expected": {
+   "headline": "Medical Billing Specialist",
+   "summary": "Entry-level medical billing specialist trained in claim submission, payment posting, and denial follow-up for physician practices.",
+   "experience_bullets": [
+    "Submitted clean claims via clearinghouse with a 94% first-pass rate.",
+    "Posted insurance and patient payments to practice management system."
+   ],
+   "skills": []
+  }
+ },
+ {
+  "label": "no_headers_bulleted_skills_dash",
+  "resume_text": "Kevin Boyle\nkevin.boyle@email.com | 617-555-0126 | Boston, MA\n\nHealthcare AR team lead with 11 years directing collections and denial-prevention initiatives for hospital systems, consistently beating cash-to-net targets.\n\nAR Team Lead, Bay State Hospital (2017-Present)\n- Led a 12-person follow-up team collecting $40M+ annually.\n- Cut initial denial rate from 11% to 6% via front-end edits.\nSenior Collector, Commonwealth Health (2013-2017)\n- Escalated high-dollar accounts and coordinated payer disputes.\n\n- Denial prevention\n- Cash posting\n- 837/835 EDI\n- Payer disputes\n- Team leadership",
+  "expected": {
+   "headline": "Kevin Boyle",
+   "summary": "Healthcare AR team lead with 11 years directing collections and denial-prevention initiatives for hospital systems, consistently beating cash-to-net targets.",
+   "experience_bullets": [
+    "Led a 12-person follow-up team collecting $40M+ annually.",
+    "Cut initial denial rate from 11% to 6% via front-end edits.",
+    "Escalated high-dollar accounts and coordinated payer disputes."
+   ],
+   "skills": [
+    "Denial prevention",
+    "Cash posting",
+    "837/835 EDI",
+    "Payer disputes",
+    "Team leadership"
+   ]
+  }
+ },
+ {
+  "label": "two_column_flattened_no_summary_heading",
+  "resume_text": "MARCUS LEE                     marcus.lee@email.com\nMedical Coding Auditor         (704) 555-0159 | Charlotte, NC\n\nCoding auditor with 8 years reviewing inpatient and outpatient records for DRG accuracy and compliance, recovering revenue through corrected code assignment.\n\nEXPERIENCE                     KEY SKILLS\nCoding Auditor,                DRG validation\nQueen City Health (2018-Now)   ICD-10-PCS\n- Audited 200+ inpatient        MS-DRG / APR-DRG\n  charts monthly for DRG        coding compliance\n  accuracy.                     3M 360 Encompass\n- Recovered $620K via           clinical documentation\n  corrected DRG assignment.\nCoder, Metro Medical (2015-2018)\n- Coded outpatient E/M and procedural encounters.",
+  "expected": {
+   "headline": "Medical Coding Auditor",
+   "summary": "Coding auditor with 8 years reviewing inpatient and outpatient records for DRG accuracy and compliance, recovering revenue through corrected code assignment.",
+   "experience_bullets": [
+    "Audited 200+ inpatient charts monthly for DRG accuracy.",
+    "Recovered $620K via corrected DRG assignment.",
+    "Coded outpatient E/M and procedural encounters."
+   ],
+   "skills": [
+    "DRG validation",
+    "ICD-10-PCS",
+    "MS-DRG / APR-DRG",
+    "coding compliance",
+    "3M 360 Encompass",
+    "clinical documentation"
+   ]
+  }
+ }
+]
