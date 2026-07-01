@@ -1,0 +1,4 @@
+# Live LLM path only. The deterministic core (taxonomy, schema, guardrails,
+# engine, diff) needs only pydantic, which anthropic pulls in.
+anthropic>=0.40
+pydantic>=2

@@ -1,0 +1,64 @@
+# Resume Re-Frame engine (Phase 1.2 - the wedge)
+
+Reframe a healthcare revenue-cycle resume so the candidate is **found in recruiter Boolean and job-title search**, without inventing anything.
+The engine optimizes for being *searchable*, not for maximizing an ATS match percentage.
+
+## The design: creative proposer, deterministic guard
+
+The engine is two layers, kept deliberately separate.
+
+1. **Creative layer** ([`llm.py`](llm.py)) asks Claude to *propose* edits as strict structured JSON.
+Two kinds only: `relabel` (change a job-title/skill label to a canonical, searchable target term) and `reemphasis` (surface existing content more prominently).
+Nothing it returns is trusted.
+
+2. **Deterministic guard** ([`guardrails.py`](guardrails.py)) re-validates every proposed edit against the source resume and hard-abstains anything it cannot prove:
+   - **span** - the edit must be anchored to text that is verbatim in the resume;
+   - **numeric** - every number in the new text must already appear in the resume (invented metrics are the top resume-integrity risk);
+   - **entity** - no cert, system, clearinghouse, insurer, code set, or named employer that the resume does not support (canonical target-title relabels are allowed);
+   - **relabel discipline** - a relabel must surface a keyword from the approved recruiter-search taxonomy.
+
+The guard never rewrites text.
+It only accepts or rejects, with a stable reason for every rejection, so the user can see exactly what was dropped and why.
+Because the guard, taxonomy, schema, engine, and diff import with no SDK dependency, the trust core is fully unit-tested with no API key and no network.
+
+## Modes (aligned to the P0-E callback A/B arms)
+
+- `control` - resume unchanged (the A/B baseline; never calls the model, so it costs nothing).
+- `title_only` - only a headline relabel, to isolate the title lever.
+- `full_reframe` - headline relabel plus summary/bullet/skills reemphasis.
+
+The mode is passed to the model and re-enforced deterministically in the engine.
+
+## PII / ZDR
+
+A resume is PII.
+Zero Data Retention is an **account-level** Anthropic setting, not a request parameter - enable it on the API key/organization so prompts and completions are not retained past serving the response.
+A ZDR organization cannot use Claude Fable 5 (it requires 30-day retention and returns 400 under ZDR), which is one reason the default model is `claude-sonnet-5`.
+The engine is stateless and never persists resume text; [`llm.py`](llm.py) never logs resume text or model output (telemetry records only counts, model id, and token usage).
+Optionally pin inference region with `REFRAME_INFERENCE_GEO=us`.
+
+## Try it offline (no API key)
+
+```bash
+python -m reframe.cli \
+  --resume reframe/examples/laritza_resume.txt \
+  --proposals reframe/examples/laritza_edits.json \
+  --mode full_reframe
+```
+
+The example proposals include three grounded edits (accepted) and three deliberately ungrounded ones - an invented metric, an invented system, and invented experience - which the guard rejects.
+
+## Live run
+
+```bash
+export ANTHROPIC_API_KEY=...        # or `ant auth login`
+python -m reframe.cli --resume path/to/resume.txt --mode full_reframe
+```
+
+Override the model with `--model` or `REFRAME_MODEL`.
+
+## Tests
+
+```bash
+python -m unittest discover -s reframe -p 'test_*.py'
+```

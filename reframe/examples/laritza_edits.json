@@ -1,0 +1,59 @@
+{
+  "_comment": "Canned proposer output for the worked example. Three edits are grounded and should be ACCEPTED; three are deliberately ungrounded (invented metric, invented system, invented experience) and MUST be abstained by the guard. Feed with: python -m reframe.cli --resume reframe/examples/laritza_resume.txt --proposals reframe/examples/laritza_edits.json",
+  "edits": [
+    {
+      "field": "headline",
+      "change_type": "relabel",
+      "source_span": "Medical Billing Representative",
+      "before": "Medical Billing Representative",
+      "after": "Accounts Receivable / Denials & Appeals Specialist",
+      "surfaced_keywords": ["accounts receivable", "denials", "appeals"],
+      "rationale": "Resume shows accounts receivable follow-up plus denied claims and appeals work; relabel to the searchable target titles."
+    },
+    {
+      "field": "summary",
+      "change_type": "reemphasis",
+      "source_span": "Detail-oriented billing professional with 6 years in a hospital business office. Comfortable working insurance claims and following up with payers.",
+      "before": "Detail-oriented billing professional with 6 years in a hospital business office. Comfortable working insurance claims and following up with payers.",
+      "after": "Revenue cycle billing professional with 6 years in a hospital business office, focused on accounts receivable follow-up, denials, and appeals.",
+      "surfaced_keywords": ["revenue cycle", "accounts receivable", "denials", "appeals"],
+      "rationale": "Surfaces the accounts receivable, denials, and appeals work already described; keeps the 6-year tenure verbatim."
+    },
+    {
+      "field": "bullet",
+      "change_type": "reemphasis",
+      "source_span": "Called insurance companies to resolve claim rejections and underpayments.",
+      "before": "Called insurance companies to resolve claim rejections and underpayments.",
+      "after": "Resolved claim denials and underpayments through payer appeals and accounts receivable follow-up.",
+      "surfaced_keywords": ["denials", "appeals", "accounts receivable"],
+      "rationale": "Reframes generic phone follow-up into the denials/appeals/AR terms recruiters search."
+    },
+    {
+      "field": "bullet",
+      "change_type": "reemphasis",
+      "source_span": "Worked accounts receivable follow-up on unpaid hospital claims.",
+      "before": "Worked accounts receivable follow-up on unpaid hospital claims.",
+      "after": "Reduced accounts receivable aging by 34% across unpaid hospital claims.",
+      "surfaced_keywords": ["accounts receivable"],
+      "rationale": "INVENTED metric - the resume never states a 34% reduction. Must be abstained."
+    },
+    {
+      "field": "bullet",
+      "change_type": "reemphasis",
+      "source_span": "Posted patient payments and reconciled daily batches.",
+      "before": "Posted patient payments and reconciled daily batches.",
+      "after": "Posted patient payments in Epic Resolute and reconciled daily batches.",
+      "surfaced_keywords": [],
+      "rationale": "INVENTED system - the resume never mentions Epic. Must be abstained."
+    },
+    {
+      "field": "bullet",
+      "change_type": "reemphasis",
+      "source_span": "Managed a team of billing specialists across two facilities.",
+      "before": "Managed a team of billing specialists across two facilities.",
+      "after": "Led accounts receivable operations for a team of billing specialists across two facilities.",
+      "surfaced_keywords": ["accounts receivable"],
+      "rationale": "INVENTED experience - no such line exists in the resume. Must be abstained."
+    }
+  ]
+}
