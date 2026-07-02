@@ -67,6 +67,21 @@ python -m reframe.cli --resume path/to/resume.txt --mode full_reframe
 
 Override the model with `--model` or `REFRAME_MODEL`.
 
+## Backend proposer proxy (for the extension)
+
+The browser extension must never ship an Anthropic key, so its side panel calls a small proxy that holds the ZDR-enabled key and returns raw proposals; the extension's on-device guard then validates every one.
+
+```bash
+export ANTHROPIC_API_KEY=...                              # ZDR-enabled
+export REFRAME_ALLOWED_ORIGINS=chrome-extension://<id>    # CORS allowlist
+python -m reframe.server --host 127.0.0.1 --port 8781
+```
+
+`POST /reframe/propose` with `{resume, mode, target_title?}` returns `{edits: [...]}`; `GET /health` returns `{status: "ok"}`.
+The proxy never logs or echoes the resume, locks CORS to the allowlist (an unlisted origin is browser-blocked), rejects bodies over 512 KB, and returns a generic error on a proposer failure.
+It does no auth of its own - put it behind your own gate (Cloudflare Access, an API key, a private network) before exposing it publicly.
+Point the extension at it by setting the `reframe_proxy` key in the extension's storage to the proxy URL.
+
 ## Tests
 
 ```bash
