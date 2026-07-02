@@ -8,7 +8,31 @@
 <body>
   <h1>Untethered</h1>
   <div class="sub">score-don't-store · nothing leaves this device</div>
-  <button id="scan">Score this page</button>
-  <div id="out"><div class="empty">Open a job posting (Workday / Greenhouse / Lever / Ashby / Indeed) and click “Score this page”.</div></div>
+
+  <div class="tabs">
+    <button id="tab-score" class="tab active">Score page</button>
+    <button id="tab-reframe" class="tab">Re-Frame resume</button>
+  </div>
+
+  <section id="panel-score">
+    <button id="scan">Score this page</button>
+    <div id="out"><div class="empty">Open a job posting (Workday / Greenhouse / Lever / Ashby / Indeed) and click “Score this page”.</div></div>
+  </section>
+
+  <section id="panel-reframe" hidden>
+    <textarea id="rf-resume" rows="9" placeholder="Paste your resume text here…"></textarea>
+    <div class="rf-controls">
+      <select id="rf-mode" aria-label="Re-frame mode">
+        <option value="full_reframe">Full re-frame</option>
+        <option value="title_only">Title only</option>
+        <option value="control">Control (unchanged)</option>
+      </select>
+      <button id="rf-run">Re-Frame</button>
+      <button id="rf-sample" class="ghost">Try sample</button>
+    </div>
+    <div class="rf-note">The grounding guard runs on-device — an invented metric, tool, or employer is rejected before you ever see it. The AI suggestion step calls your configured proxy, never a shipped key.</div>
+    <div id="rf-out"><div class="empty">Paste a resume and choose a mode, or click “Try sample”.</div></div>
+  </section>
+
   <script type="module" src="./main.ts"></script>
 </body></html>

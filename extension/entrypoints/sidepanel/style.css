@@ -13,3 +13,29 @@ button{background:var(--accent);color:#08131f;border:0;border-radius:7px;padding
 .big{font-size:15px;font-weight:800;margin-top:10px}
 .dim{color:var(--dim)} .reasons{color:var(--dim);font-size:11px;margin-top:8px}
 .empty{color:var(--dim);padding:16px 4px}
+
+/* tabs */
+.tabs{display:flex;gap:6px;margin-bottom:10px}
+.tab{background:transparent;color:var(--dim);border:1px solid var(--line);border-radius:7px;font-weight:700}
+.tab.active{background:var(--panel);color:var(--ink);border-color:var(--accent)}
+
+/* re-frame panel */
+#rf-resume{width:100%;box-sizing:border-box;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:9px;font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;resize:vertical}
+.rf-controls{display:flex;gap:8px;align-items:center;margin-top:8px}
+.rf-controls select{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:8px;font-size:12px}
+button.ghost{background:transparent;color:var(--accent);border:1px solid var(--line)}
+.rf-note{color:var(--dim);font-size:11px;margin-top:8px;line-height:1.45}
+.rf-h{font-weight:800;font-size:14px;margin-bottom:6px}
+.rf-sub{color:var(--dim);font-size:11px;font-weight:700;margin:10px 0 4px;text-transform:uppercase;letter-spacing:.03em}
+.rf-edit{border-top:1px solid var(--line);padding:8px 0}
+.rf-edit-head{margin-bottom:5px}
+.tag{background:rgba(88,166,255,.14);color:var(--accent);border-radius:5px;padding:1px 6px;font-size:10px;font-weight:700;margin-right:4px}
+.rf-before{color:var(--kill);font-size:12px;white-space:pre-wrap}
+.rf-after{color:var(--go);font-size:12px;white-space:pre-wrap;margin:2px 0}
+.rf-kw{color:var(--accent);font-size:11px;margin-top:3px}
+.rf-why{color:var(--dim);font-size:11px;margin-top:2px}
+.rf-terms{margin-top:10px}
+.rf-drop{margin-top:6px}
+.rf-dropped{border-left:2px solid var(--kill);padding:4px 0 4px 8px;margin:6px 0}
+.rf-dropped-text{color:var(--ink);font-size:12px;opacity:.7;white-space:pre-wrap}
+.rf-x{color:var(--kill);font-size:11px;margin-top:2px}

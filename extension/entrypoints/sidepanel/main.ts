@@ -7,6 +7,10 @@ import { parseWorkdayDetail } from "../../src/parsers/workday";
 import { parseJsonLdBlocks } from "../../src/parsers/jsonld";
 import { recordExtraction } from "../../src/telemetry";
 import type { JobPosting, PayEstimate } from "../../src/types";
+import { reviewProposals, renderReview, type Mode } from "../../src/reframe/review";
+import { propose } from "../../src/reframe/propose";
+import { SAMPLE_EDITS, SAMPLE_RESUME } from "../../src/reframe/sample";
+import type { Edit } from "../../src/reframe/types";
 
 const out = document.getElementById("out")!;
 const empty = (msg: string) => { out.innerHTML = `<div class="empty">${msg}</div>`; };
@@ -51,6 +55,59 @@ export function render(p: JobPosting, target: HTMLElement = out): void {
     ${s.reasons.length ? `<div class="reasons">Why: ${s.reasons.map(esc).join(" · ")}</div>` : ""}
   </div>`;
 }
+
+// --------------------------------------------------------------------------- //
+// Re-Frame panel
+// --------------------------------------------------------------------------- //
+const rfOut = document.getElementById("rf-out")!;
+const rfEmpty = (msg: string) => { rfOut.innerHTML = `<div class="empty">${esc(msg)}</div>`; };
+
+function showReview(edits: Edit[], resume: string, mode: Mode): void {
+  rfOut.innerHTML = renderReview(reviewProposals(edits, resume, mode));
+}
+
+function selectedMode(): Mode {
+  return (document.getElementById("rf-mode") as HTMLSelectElement).value as Mode;
+}
+
+document.getElementById("rf-sample")?.addEventListener("click", () => {
+  (document.getElementById("rf-resume") as HTMLTextAreaElement).value = SAMPLE_RESUME;
+  showReview(SAMPLE_EDITS, SAMPLE_RESUME, selectedMode());
+});
+
+document.getElementById("rf-run")?.addEventListener("click", async () => {
+  const resume = (document.getElementById("rf-resume") as HTMLTextAreaElement).value.trim();
+  if (!resume) return rfEmpty("Paste your resume first.");
+  const mode = selectedMode();
+  if (mode === "control") return showReview([], resume, mode);
+
+  rfEmpty("Getting suggestions…");
+  try {
+    const cfg = await chrome.storage?.local.get("reframe_proxy");
+    const endpoint = cfg?.reframe_proxy as string | undefined;
+    if (!endpoint) {
+      return rfEmpty(
+        "No proposer proxy configured. Set a `reframe_proxy` endpoint (a backend holding the ZDR key) — or click “Try sample” to see the on-device guard in action.",
+      );
+    }
+    const edits = await propose(resume, mode, { endpoint });
+    showReview(edits, resume, mode);
+  } catch (e) {
+    rfEmpty("Suggestion step failed: " + (e as Error).message);
+  }
+});
+
+// --------------------------------------------------------------------------- //
+// Tabs
+// --------------------------------------------------------------------------- //
+function activate(tab: "score" | "reframe"): void {
+  document.getElementById("panel-score")!.hidden = tab !== "score";
+  document.getElementById("panel-reframe")!.hidden = tab !== "reframe";
+  document.getElementById("tab-score")!.classList.toggle("active", tab === "score");
+  document.getElementById("tab-reframe")!.classList.toggle("active", tab === "reframe");
+}
+document.getElementById("tab-score")?.addEventListener("click", () => activate("score"));
+document.getElementById("tab-reframe")?.addEventListener("click", () => activate("reframe"));
 
 document.getElementById("scan")?.addEventListener("click", async () => {
   empty("Scoring…");
