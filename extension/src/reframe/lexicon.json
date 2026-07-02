@@ -1,0 +1,62 @@
+{
+  "_comment": "Data-driven RCM vocabulary for the deterministic fabrication guard (reframe/guardrails.py). The guard flags a 'hard entity' in reframed text (a cert, system, clearinghouse, insurer, code set, or named org) that does not appear in the source resume - that is an invented credential, not a re-label. Keep this list conservative and specific: a name here means 'if the reframe claims it, the resume must support it.' Match is case-insensitive, whole-word/phrase.",
+  "certs": [
+    "CPC", "CPC-A", "COC", "CIC", "CRC", "CCS", "CCS-P", "CCA", "CPB", "CPMA",
+    "CPPM", "CDEO", "CANPC", "RHIA", "RHIT", "CRCR", "CHFP", "CSAF", "CSPR",
+    "CSPPM", "CPAR", "CHAM", "CHAA", "CRCS", "CRCS-I", "CRCS-P", "CMRS", "CMBS"
+  ],
+  "systems": [
+    "Epic", "Cerner", "Oracle Health", "Meditech", "Athenahealth", "athenaOne",
+    "NextGen", "Allscripts", "Veradigm", "eClinicalWorks", "Kareo", "AdvancedMD",
+    "Greenway", "GE Centricity", "Cerner PowerChart", "Epic Resolute", "Epic HB",
+    "Epic PB", "Epic Tapestry", "Optum", "nThrive", "FinThrive", "Recondo",
+    "TriZetto", "Cirius", "SSI Group", "Xtend", "MedeAnalytics"
+  ],
+  "clearinghouses": [
+    "Availity", "Waystar", "Change Healthcare", "Experian Health", "Navicure",
+    "ZirMed", "Navinet", "NaviNet", "Zelis", "Trizetto", "Emdeon", "RelayHealth",
+    "Office Ally", "Claim.MD", "Inovalon"
+  ],
+  "insurers": [
+    "Aetna", "Cigna", "Humana", "UnitedHealthcare", "United Healthcare",
+    "UnitedHealth", "Anthem", "Elevance", "Centene", "Molina", "Kaiser",
+    "Kaiser Permanente", "Blue Cross", "Blue Shield", "BCBS", "Medicare",
+    "Medicaid", "Tricare", "WellCare", "Highmark", "Oscar Health", "CareSource",
+    "Amerigroup", "Wellpoint", "Bright Health"
+  ],
+  "codesets": [
+    "ICD", "ICD-9", "ICD-10", "ICD-10-CM", "ICD-10-PCS", "CPT", "CPT-4",
+    "HCPCS", "DRG", "MS-DRG", "APC", "HIPAA", "EOB", "ERA", "EDI", "835",
+    "837", "837P", "837I", "NPI", "HL7", "FHIR", "UB-04", "UB04", "CMS-1500",
+    "HCFA", "NCPDP", "LCD", "NCD", "NCCI", "MUE", "RVU", "RARC", "CARC"
+  ],
+  "org_suffixes": [
+    "Inc", "LLC", "Corp", "Corporation", "Company", "Co", "Group", "Health",
+    "Healthcare", "Hospital", "Hospitals", "Clinic", "Clinics", "Medical",
+    "Systems", "Partners", "Associates", "Services", "Solutions", "Center",
+    "Centers", "Network", "Physicians", "Care", "Cross", "Shield", "Ministries",
+    "Foundation", "Institute", "University"
+  ],
+  "generic_acronyms": [
+    "US", "USA", "U.S", "EST", "PST", "CST", "MST", "CT", "PT", "ET", "MT",
+    "AM", "PM", "OK", "ID", "IT", "HR", "PTO", "FTE", "EOD", "FAQ", "CEO",
+    "CFO", "COO", "VP", "OK", "TBD", "N/A", "ETC", "IE", "EG", "AKA", "ASAP",
+    "KPI", "SLA", "SOP", "QA", "QC", "DEI", "PDF", "URL", "API", "USD"
+  ],
+  "acronym_map": {
+    "AR": "accounts receivable",
+    "A/R": "accounts receivable",
+    "RCM": "revenue cycle",
+    "PA": "prior authorization",
+    "CDI": "clinical documentation",
+    "EOB": "explanation of benefits",
+    "ERA": "electronic remittance",
+    "DNFB": "discharged not final billed",
+    "POS": "point of service",
+    "COB": "coordination of benefits",
+    "EDI": "electronic data interchange",
+    "NPI": "national provider identifier",
+    "TOS": "type of service",
+    "DOS": "date of service"
+  }
+}

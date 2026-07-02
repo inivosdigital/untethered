@@ -1,0 +1,250 @@
+{
+ "_comment": "CANONICAL guard-parity fixtures generated from reframe/guardrails.check_edit (Python source of truth). extension/src/reframe/guard.ts must reproduce expect_reasons exactly. Regenerate: scratch generator in the #16 build.",
+ "resume": "Laritza M.\nMedical Billing Representative\n\nSummary\nDetail-oriented billing professional with 6 years in a hospital business office.\n\nExperience\nRegional Hospital Business Office - Billing Representative\n- Worked accounts receivable follow-up on unpaid hospital claims.\n- Handled denied claims and filed appeals with commercial and Medicare payers.\n- Posted patient payments in Epic and reconciled daily batches.\n\nSkills\nInsurance follow-up, claim resolution, Microsoft Excel.\n",
+ "cases": [
+  {
+   "label": "grounded_relabel",
+   "edit": {
+    "field": "headline",
+    "change_type": "relabel",
+    "source_span": "Medical Billing Representative",
+    "before": "Medical Billing Representative",
+    "after": "Accounts Receivable / Denials & Appeals Specialist",
+    "surfaced_keywords": [
+     "accounts receivable",
+     "denials",
+     "appeals"
+    ],
+    "rationale": "x"
+   },
+   "expect_reasons": []
+  },
+  {
+   "label": "grounded_reemphasis_keep_metric",
+   "edit": {
+    "field": "bullet",
+    "change_type": "reemphasis",
+    "source_span": "Detail-oriented billing professional with 6 years in a hospital business office.",
+    "before": "Detail-oriented billing professional with 6 years in a hospital business office.",
+    "after": "Revenue cycle professional with 6 years in a hospital business office.",
+    "surfaced_keywords": [],
+    "rationale": "x"
+   },
+   "expect_reasons": []
+  },
+  {
+   "label": "acronym_grounded_by_expansion",
+   "edit": {
+    "field": "bullet",
+    "change_type": "reemphasis",
+    "source_span": "Worked accounts receivable follow-up on unpaid hospital claims.",
+    "before": "Worked accounts receivable follow-up on unpaid hospital claims.",
+    "after": "Owned AR follow-up on unpaid hospital claims.",
+    "surfaced_keywords": [],
+    "rationale": "x"
+   },
+   "expect_reasons": []
+  },
+  {
+   "label": "lexicon_entity_grounded_epic",
+   "edit": {
+    "field": "bullet",
+    "change_type": "reemphasis",
+    "source_span": "Posted patient payments in Epic and reconciled daily batches.",
+    "before": "Posted patient payments in Epic and reconciled daily batches.",
+    "after": "Posted patient payments in Epic and reconciled batches for revenue cycle.",
+    "surfaced_keywords": [],
+    "rationale": "x"
+   },
+   "expect_reasons": []
+  },
+  {
+   "label": "taxonomy_title_not_flagged",
+   "edit": {
+    "field": "headline",
+    "change_type": "relabel",
+    "source_span": "Medical Billing Representative",
+    "before": "Medical Billing Representative",
+    "after": "Accounts Receivable Specialist",
+    "surfaced_keywords": [
+     "accounts receivable"
+    ],
+    "rationale": "x"
+   },
+   "expect_reasons": []
+  },
+  {
+   "label": "fabricated_metric",
+   "edit": {
+    "field": "bullet",
+    "change_type": "reemphasis",
+    "source_span": "Worked accounts receivable follow-up on unpaid hospital claims.",
+    "before": "Worked accounts receivable follow-up on unpaid hospital claims.",
+    "after": "Reduced accounts receivable aging by 34% on unpaid hospital claims.",
+    "surfaced_keywords": [],
+    "rationale": "x"
+   },
+   "expect_reasons": [
+    "fabricated_metric:34"
+   ]
+  },
+  {
+   "label": "fabricated_system_cerner",
+   "edit": {
+    "field": "bullet",
+    "change_type": "reemphasis",
+    "source_span": "Posted patient payments in Epic and reconciled daily batches.",
+    "before": "Posted patient payments in Epic and reconciled daily batches.",
+    "after": "Posted patient payments in Cerner and reconciled daily batches.",
+    "surfaced_keywords": [],
+    "rationale": "x"
+   },
+   "expect_reasons": [
+    "fabricated_entity:Cerner"
+   ]
+  },
+  {
+   "label": "fabricated_cert_cpc",
+   "edit": {
+    "field": "bullet",
+    "change_type": "reemphasis",
+    "source_span": "Handled denied claims and filed appeals with commercial and Medicare payers.",
+    "before": "Handled denied claims and filed appeals with commercial and Medicare payers.",
+    "after": "CPC-certified; handled denied claims and appeals for Medicare payers.",
+    "surfaced_keywords": [],
+    "rationale": "x"
+   },
+   "expect_reasons": [
+    "fabricated_entity:CPC"
+   ]
+  },
+  {
+   "label": "fabricated_org",
+   "edit": {
+    "field": "bullet",
+    "change_type": "reemphasis",
+    "source_span": "Worked accounts receivable follow-up on unpaid hospital claims.",
+    "before": "Worked accounts receivable follow-up on unpaid hospital claims.",
+    "after": "Led accounts receivable at Mercy Health System on unpaid hospital claims.",
+    "surfaced_keywords": [],
+    "rationale": "x"
+   },
+   "expect_reasons": [
+    "fabricated_entity:Mercy Health System"
+   ]
+  },
+  {
+   "label": "ungrounded_span_and_before",
+   "edit": {
+    "field": "bullet",
+    "change_type": "reemphasis",
+    "source_span": "Managed a team of ten billing specialists.",
+    "before": "Managed a team of ten billing specialists.",
+    "after": "Led accounts receivable for a team of billing specialists.",
+    "surfaced_keywords": [],
+    "rationale": "x"
+   },
+   "expect_reasons": [
+    "ungrounded_span",
+    "ungrounded_before"
+   ]
+  },
+  {
+   "label": "no_op",
+   "edit": {
+    "field": "bullet",
+    "change_type": "reemphasis",
+    "source_span": "Worked accounts receivable follow-up on unpaid hospital claims.",
+    "before": "Worked accounts receivable follow-up on unpaid hospital claims.",
+    "after": "Worked accounts receivable follow-up on unpaid hospital claims.",
+    "surfaced_keywords": [],
+    "rationale": "x"
+   },
+   "expect_reasons": [
+    "no_op"
+   ]
+  },
+  {
+   "label": "empty_after",
+   "edit": {
+    "field": "bullet",
+    "change_type": "reemphasis",
+    "source_span": "Worked accounts receivable follow-up on unpaid hospital claims.",
+    "before": "Worked accounts receivable follow-up on unpaid hospital claims.",
+    "after": "   ",
+    "surfaced_keywords": [],
+    "rationale": "x"
+   },
+   "expect_reasons": [
+    "empty_after"
+   ]
+  },
+  {
+   "label": "relabel_no_keyword",
+   "edit": {
+    "field": "headline",
+    "change_type": "relabel",
+    "source_span": "Medical Billing Representative",
+    "before": "Medical Billing Representative",
+    "after": "Senior Billing Representative",
+    "surfaced_keywords": [],
+    "rationale": "x"
+   },
+   "expect_reasons": [
+    "relabel_no_keyword"
+   ]
+  },
+  {
+   "label": "keyword_not_in_taxonomy",
+   "edit": {
+    "field": "headline",
+    "change_type": "relabel",
+    "source_span": "Medical Billing Representative",
+    "before": "Medical Billing Representative",
+    "after": "Rockstar Billing Ninja",
+    "surfaced_keywords": [
+     "rockstar"
+    ],
+    "rationale": "x"
+   },
+   "expect_reasons": [
+    "keyword_not_in_taxonomy:rockstar"
+   ]
+  },
+  {
+   "label": "keyword_absent_from_after",
+   "edit": {
+    "field": "headline",
+    "change_type": "relabel",
+    "source_span": "Medical Billing Representative",
+    "before": "Medical Billing Representative",
+    "after": "Senior Billing Specialist",
+    "surfaced_keywords": [
+     "accounts receivable"
+    ],
+    "rationale": "x"
+   },
+   "expect_reasons": [
+    "keyword_absent_from_after"
+   ]
+  },
+  {
+   "label": "combined_metric_and_entity",
+   "edit": {
+    "field": "bullet",
+    "change_type": "reemphasis",
+    "source_span": "Handled denied claims and filed appeals with commercial and Medicare payers.",
+    "before": "Handled denied claims and filed appeals with commercial and Medicare payers.",
+    "after": "Cut denials 30% in Cerner for Aetna and Cigna payers.",
+    "surfaced_keywords": [],
+    "rationale": "x"
+   },
+   "expect_reasons": [
+    "fabricated_metric:30",
+    "fabricated_entity:Cerner",
+    "fabricated_entity:Aetna",
+    "fabricated_entity:Cigna"
+   ]
+  }
+ ]
+}

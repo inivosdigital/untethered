@@ -34,14 +34,15 @@ TARGET_TITLES = [t.lower() for t in _RULES["title_keywords"]]
 
 # Combined claim vocabulary (certs + systems + clearinghouses + insurers + code
 # sets), lowercased, longest-first so multi-word phrases match before a token.
+# The (-len, alpha) key is DETERMINISTIC so the cross-language guard (the TS port
+# in the extension) produces byte-identical fabricated-entity ordering.
 _CLAIM_TERMS = sorted(
     {
         t.lower()
         for key in ("certs", "systems", "clearinghouses", "insurers", "codesets")
         for t in LEXICON.get(key, [])
     },
-    key=len,
-    reverse=True,
+    key=lambda t: (-len(t), t),
 )
 _GENERIC_ACRONYMS = {a.upper() for a in LEXICON.get("generic_acronyms", [])}
 _ORG_SUFFIXES = {s.lower() for s in LEXICON.get("org_suffixes", [])}
